@@ -1,11 +1,11 @@
 <template>
   <div class="home">
-    <img alt="Vue logo" src="../assets/logo.png">
+    <img alt="Vue logo" src="~@/assets/vue.svg">
+    <hello-world msg="test" />
+    <el-button>test</el-button>
   </div>
 </template>
 
-<script lang="ts">
-import { defineComponent } from 'vue';
-
-export default defineComponent({});
+<script lang="ts" setup>
+import HelloWorld from '@/components/HelloWorld.vue';
 </script>
