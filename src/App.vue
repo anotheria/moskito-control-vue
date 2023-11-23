@@ -3,24 +3,15 @@
 </template>
 
 <style lang="scss">
+:root {
+  --mc-zinc-50: #fafafa;
+  --mc-zinc-100: #f3f4f6;
+  --mc-zinc-700: #3f3f46;
+  --mc-zinc-900: #1c1917;
+}
 #app {
   font-family: Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-}
-
-#nav {
-  padding: 30px;
-
-  a {
-    font-weight: bold;
-    color: #2c3e50;
-
-    &.router-link-exact-active {
-      color: #42b983;
-    }
-  }
 }
 </style>

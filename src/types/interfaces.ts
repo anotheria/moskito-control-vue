@@ -6,10 +6,6 @@ export interface IResponse<T = {}> {
   results: T;
 }
 
-export interface IToken {
-  token: string;
-}
-
 export interface ILanguage {
   key: string;
   label: string;
