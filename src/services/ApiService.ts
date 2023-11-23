@@ -1,5 +1,4 @@
 import { AxiosRequestConfig } from 'axios';
-// eslint-disable-next-line import/no-cycle
 import http from '@/plugins/axios';
 
 export default class ApiService {
