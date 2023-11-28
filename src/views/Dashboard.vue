@@ -1,52 +1,38 @@
 <script setup lang="ts">
 import { onMounted } from 'vue';
+import { useMainStore } from '@/store/mainStore.ts';
 import MoskitoService from '@/services/MoskitoService.ts';
+import VueSelectorPanel from "@/components/VueSelectorPanel.vue";
+
+const mainStore = useMainStore();
 
 const getViews = async () => {
-  const response = await MoskitoService.fetchViews();
-  console.log(response);
+  const { results: { views } } = await MoskitoService.getControl();
+  mainStore.views = views;
+  mainStore.setInitialActiveView();
 }
+
 onMounted(() => {
   getViews();
 });
 </script>
 
 <template>
-  <div class="dashboard-wrapper">
-    <aside class="aside-panel">
-      sidebar
-    </aside>
-    <main class="content">
-      <div class="selector-panel">view selector</div>
-      <div class="info-panel">info panel with controls Settings | Data Repository</div>
-      <div class="data-panel">
-        components and data views
-      </div>
-    </main>
+  <div class="dashboard">
+    <vue-selector-panel />
+    <div class="info-panel">info panel with controls Settings | Data Repository</div>
+    <div class="data-panel">
+      components and data views
+    </div>
   </div>
 </template>
 
 <style lang="scss" scoped>
-.dashboard-wrapper {
-  width: 100vw;
-  min-height: 100vh;
-  background-color: var(--mc-zinc-900);
-  color: var(--mc-zinc-100);
-  display: grid;
-  grid-template-columns: 200px 1fr;
-}
-.content {
+.dashboard {
+  min-height: 100%;
   display: flex;
   flex-direction: column;
-  padding: 0 30px 30px;
 }
-.selector-panel {
-  height: 60px;
-  display: flex;
-  align-items: center;
-  padding: 0 15px;
-}
-
 .info-panel {
   height: 40px;
   display: flex;
