@@ -1,7 +1,7 @@
 <template>
   <div class="dashboard-wrapper">
     <aside class="aside-panel">
-      sidebar
+      <img src="/moskito_logo.png" class="moskito-logo">
     </aside>
     <main class="content">
       <router-view/>
@@ -27,6 +27,9 @@
   --mc-status-orange: #ff8400;
   --mc-status-yellow: #f4e300;
   --mc-status-green: #94cc19;
+  --mc-green-500: #4ade80;
+  --mc-green-600: #16a34a;
+  --mc-green-700: #15803d;
 }
 #app {
   font-family: Avenir, Helvetica, Arial, sans-serif;
@@ -44,6 +47,20 @@
 .content {
   display: flex;
   flex-direction: column;
-  padding: 0 30px 30px;
+  padding: 0 30px 30px 0;
+}
+.moskito-logo {
+  display: block;
+  width: auto;
+  height: 40px;
+  transform: translateX(-50%);
+  position: absolute;
+  top: 20px;
+  left: 50%;
+
+}
+.aside-panel {
+  padding-top: 90px;
+  position: relative;
 }
 </style>
