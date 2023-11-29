@@ -20,7 +20,12 @@ onMounted(() => {
 <template>
   <div class="dashboard">
     <vue-selector-panel />
-    <div class="info-panel">info panel with controls Settings | Data Repository</div>
+      <div class="info-panel">
+          info panel with controls Settings | Data Repository
+          <div class="actions-container">
+              <el-button type="info" @click="$router.push('/settings')">Settings</el-button>
+          </div>
+      </div>
     <div class="data-panel">
       components and data views
     </div>
@@ -49,5 +54,8 @@ onMounted(() => {
   border-bottom-left-radius: 8px;
   border-bottom-right-radius: 8px;
   color: var(--mc-zinc-900);
+}
+.actions-container {
+    margin-left: auto;
 }
 </style>
