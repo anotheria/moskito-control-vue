@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import MoskitoService from "@/services/MoskitoService.ts";
 import {onMounted, ref} from "vue";
+import ComponentsSettings from "@/views/settings/partials/ComponentsSettings.vue";
+import ViewsSettings from "@/views/settings/partials/ViewsSettings.vue";
 
 
 const activeTab = ref<'components' | 'views'| 'charts'>('components');
@@ -11,6 +13,33 @@ const content = ref<any>({
     views: [],
     charts: [],
 });
+
+
+const createComponent = (component: any) => {
+    console.log('create!', component);
+
+    MoskitoService.createComponent(component).then((response) => {
+        console.log(response);
+        MoskitoService.fetchComponents().then((response) => {
+            content.value.components = response.results.components;
+        });
+    });
+}
+
+const deleteComponent = (name: any) => {
+    console.log('deleteComponent!', name);
+
+    MoskitoService.deleteComponent(name).then((response) => {
+        console.log(response);
+        MoskitoService.fetchComponents().then((response) => {
+            content.value.components = response.results.components;
+        });
+    });
+}
+
+const updateComponent = (component: any) => {
+    console.log('updateComponent!', component);
+}
 
 onMounted(() => {
     Promise.all([
@@ -23,6 +52,7 @@ onMounted(() => {
             components: values[1].results.components,
             charts: values[2].results.charts,
         };
+        console.log(content.value);
     });
 });
 </script>
@@ -41,16 +71,12 @@ onMounted(() => {
                 type="card"
             >
                 <el-tab-pane label="Components" name="components">
-                    <div class="content">
-                        <el-card class="list-container">
-                            <div v-for="item in content.components">
-                                <el-button link @click="activeItem = item"><span>{{ item.name }}</span></el-button>
-                            </div>
-                        </el-card>
-                        <div class="form-container">
-                            {{ activeItem }}
-                        </div>
-                    </div>
+                    <components-settings
+                        v-if="content.components.length"
+                        :components="content.components"
+                        @create="createComponent($event)"
+                        @delete="deleteComponent($event)"
+                    />
                 </el-tab-pane>
                 <el-tab-pane label="Charts" name="charts">
                     <div class="content">
@@ -65,16 +91,10 @@ onMounted(() => {
                     </div>
                 </el-tab-pane>
                 <el-tab-pane label="Views" name="views">
-                    <div class="content">
-                        <el-card class="list-container">
-                            <div v-for="item in content.views">
-                                <el-button link @click="activeItem = item"><span>{{ item.name }}</span></el-button>
-                            </div>
-                        </el-card>
-                        <div class="form-container">
-                            {{ activeItem }}
-                        </div>
-                    </div>
+                    <views-settings
+                        v-if="content.views.length"
+                        :views="content.views"
+                    />
                 </el-tab-pane>
             </el-tabs>
         </div>

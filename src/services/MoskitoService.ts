@@ -13,6 +13,10 @@ export default class MoskitoService {
     return ApiService.getAndReturnData('configuration/components');
   }
 
+  public static createComponent(data: any): Promise<any> {
+    return ApiService.postAndReturnData('configuration/components', data);
+  }
+
   public static deleteComponent(name: string): Promise<any> {
     return ApiService.deleteAndReturnData(`configuration/components/${name}`);
   }
