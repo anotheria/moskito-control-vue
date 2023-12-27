@@ -5,6 +5,10 @@ export default class MoskitoService {
     return ApiService.getAndReturnData('configuration/views');
   }
 
+  public static updateView(data: any): Promise<any> {
+    return ApiService.postAndReturnData('configuration/views', data);
+  }
+
   public static deleteView(name: string): Promise<any> {
     return ApiService.deleteAndReturnData(`configuration/views/${name}`);
   }
@@ -13,7 +17,7 @@ export default class MoskitoService {
     return ApiService.getAndReturnData('configuration/components');
   }
 
-  public static createComponent(data: any): Promise<any> {
+  public static updateComponent(data: any): Promise<any> {
     return ApiService.postAndReturnData('configuration/components', data);
   }
 

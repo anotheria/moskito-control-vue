@@ -14,19 +14,18 @@ const content = ref<any>({
     charts: [],
 });
 
+const updateComponent = (component: any) => {
+    console.log('updateComponent!', component);
 
-const createComponent = (component: any) => {
-    console.log('create!', component);
-
-    MoskitoService.createComponent(component).then((response) => {
+    MoskitoService.updateComponent(component).then((response) => {
         console.log(response);
         MoskitoService.fetchComponents().then((response) => {
             content.value.components = response.results.components;
         });
     });
-}
+};
 
-const deleteComponent = (name: any) => {
+const deleteComponent = (name: string) => {
     console.log('deleteComponent!', name);
 
     MoskitoService.deleteComponent(name).then((response) => {
@@ -35,11 +34,29 @@ const deleteComponent = (name: any) => {
             content.value.components = response.results.components;
         });
     });
-}
+};
 
-const updateComponent = (component: any) => {
-    console.log('updateComponent!', component);
-}
+const updateView = (view: any) => {
+    console.log('create view!', view);
+
+    MoskitoService.updateView(view).then((response) => {
+        console.log(response);
+        MoskitoService.fetchViews().then((response) => {
+            content.value.views = response.results.views;
+        });
+    });
+};
+
+const deleteView = (name: any) => {
+    console.log('delete view!', name);
+
+    MoskitoService.deleteView(name).then((response) => {
+        console.log(response);
+        MoskitoService.fetchViews().then((response) => {
+            content.value.views = response.results.views;
+        });
+    });
+};
 
 onMounted(() => {
     Promise.all([
@@ -74,8 +91,8 @@ onMounted(() => {
                     <components-settings
                         v-if="content.components.length"
                         :components="content.components"
-                        @create="createComponent($event)"
                         @delete="deleteComponent($event)"
+                        @update="updateComponent($event)"
                     />
                 </el-tab-pane>
                 <el-tab-pane label="Charts" name="charts">
@@ -94,6 +111,10 @@ onMounted(() => {
                     <views-settings
                         v-if="content.views.length"
                         :views="content.views"
+                        :chartOptions="content.charts"
+                        :componentsOptions="content.components"
+                        @update="updateView($event)"
+                        @delete="deleteView($event)"
                     />
                 </el-tab-pane>
             </el-tabs>

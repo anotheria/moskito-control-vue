@@ -7,6 +7,14 @@ const props = defineProps({
         type: Array<any>,
         default: [],
     },
+    chartOptions: {
+        type: Array<any>,
+        default: [],
+    },
+    componentsOptions: {
+        type: Array<any>,
+        default: [],
+    },
 });
 const emit = defineEmits(['create', 'delete', 'update']);
 
@@ -14,7 +22,9 @@ const formRef = ref<FormInstance>();
 const viewsData = computed(() => {
     return [...props.views];
 });
-const activeItem = reactive({
+const showForm = ref<boolean>(false);
+const activeIndex = ref<number | null>(null);
+const activeItem = reactive<any>({
     name: '',
     chartTags: [],
     charts: [],
@@ -25,8 +35,66 @@ const activeItem = reactive({
     widgets: [],
 });
 
-const selectActiveItem = (index: any) => {
+const chartOptions = computed(() => {
+    return [
+        {label: 'All', value: '*'},
+        ...(props.chartOptions.map(chart => ({ label: chart.name, value: chart.name })))
+    ];
+});
+
+const componentsOptions = computed(() => {
+    return [
+        {label: 'All', value: '*'},
+        ...(props.componentsOptions.map(component => ({ label: component.name, value: component.name })))
+    ];
+});
+
+const selectHelper = (newValue: string[], field: string) => {
+    if (newValue.includes('*')) {
+        activeItem[field] = ['*'];
+    }
+};
+
+const selectActiveItem = (index: number) => {
+    showForm.value = true;
+    activeIndex.value = index;
     Object.assign(activeItem, viewsData.value[index]);
+};
+
+const resetForm = (formEl: FormInstance | undefined) => {
+    if (!formEl || activeIndex.value === null) return;
+    Object.assign(activeItem, viewsData.value[activeIndex.value]);
+};
+
+const addItem = () => {
+    showForm.value = true;
+    activeIndex.value = null;
+    Object.assign(
+        activeItem,
+        {
+            name: '',
+            chartTags: [],
+            charts: [],
+            componentCategories: [],
+            componentTags: [],
+            components: [],
+            widgetTags: [],
+            widgets: [],
+        });
+}
+
+const onSubmit = () => {
+    emit('update', activeItem);
+
+    showForm.value = false;
+    activeIndex.value = null;
+};
+
+const onDelete = () => {
+    emit('delete', activeItem.name);
+
+    showForm.value = false;
+    activeIndex.value = null;
 };
 </script>
 <template>
@@ -35,51 +103,113 @@ const selectActiveItem = (index: any) => {
             <div v-for="(item, index) in viewsData">
                 <el-button link @click="selectActiveItem(index)"><span>{{ item.name }}</span></el-button>
             </div>
+
+            <div style="margin-top: 15px">
+                <el-button type="primary" @click="addItem">Add</el-button>
+            </div>
         </el-card>
         <div class="form-container">
-            {{ activeItem }}
-
-            <el-form ref="formRef" :model="activeItem" label-width="180px">
+            <el-form v-if="showForm" ref="formRef" :model="activeItem" label-width="180px">
                 <el-form-item label="Name" prop="name">
-                    <el-input v-model="activeItem.name" />
+                    <el-input v-model="activeItem.name" :disabled="activeIndex !== null" />
                 </el-form-item>
                 <el-form-item label="Charts">
-                    <el-select v-model="activeItem.charts" multiple>
-                        <el-option label="All" value="*" />
+                    <el-select
+                        @change="selectHelper($event, 'charts')"
+                        v-model="activeItem.charts"
+                        multiple
+                        class="w-100">
+                        <el-option
+                            v-for="item in chartOptions"
+                            :key="item.value"
+                            :label="item.label"
+                            :value="item.value"
+                        />
                     </el-select>
                 </el-form-item>
                 <el-form-item label="Chart Tags">
-                    <el-select v-model="activeItem.chartTags" multiple>
+                    <el-select
+                        v-model="activeItem.chartTags"
+                        @change="selectHelper($event, 'chartTags')"
+                        multiple
+                        allow-create
+                        filterable
+                        default-first-option
+                        class="w-100"
+                    >
                         <el-option label="All" value="*" />
                     </el-select>
                 </el-form-item>
                 <el-form-item label="Components">
-                    <el-select v-model="activeItem.components" multiple>
-                        <el-option label="All" value="*" />
+                    <el-select
+                        @change="selectHelper($event, 'components')"
+                        v-model="activeItem.components"
+                        multiple
+                        class="w-100">
+                        <el-option
+                            v-for="item in componentsOptions"
+                            :key="item.value"
+                            :label="item.label"
+                            :value="item.value"
+                        />
                     </el-select>
                 </el-form-item>
                 <el-form-item label="Component Tags">
-                    <el-select v-model="activeItem.componentTags" multiple>
+                    <el-select
+                        v-model="activeItem.componentTags"
+                        @change="selectHelper($event, 'componentTags')"
+                        multiple
+                        allow-create
+                        filterable
+                        default-first-option
+                        class="w-100"
+                    >
                         <el-option label="All" value="*" />
                     </el-select>
                 </el-form-item>
                 <el-form-item label="Component Categories">
-                    <el-select v-model="activeItem.componentCategories" multiple>
+                    <el-select
+                        v-model="activeItem.componentCategories"
+                        @change="selectHelper($event, 'componentCategories')"
+                        multiple
+                        allow-create
+                        filterable
+                        default-first-option
+                        class="w-100"
+                    >
                         <el-option label="All" value="*" />
                     </el-select>
                 </el-form-item>
                 <el-form-item label="Widgets">
-                    <el-select v-model="activeItem.widgets" multiple>
+                    <el-select
+                        v-model="activeItem.widgets"
+                        @change="selectHelper($event, 'widgets')"
+                        multiple
+                        allow-create
+                        filterable
+                        default-first-option
+                        class="w-100"
+                    >
                         <el-option label="All" value="*" />
                     </el-select>
                 </el-form-item>
                 <el-form-item label="Widget Tags">
-                    <el-select v-model="activeItem.widgetTags" multiple>
+                    <el-select
+                        v-model="activeItem.widgetTags"
+                        @change="selectHelper($event, 'widgetTags')"
+                        multiple
+                        allow-create
+                        filterable
+                        default-first-option
+                        class="w-100"
+                    >
                         <el-option label="All" value="*" />
                     </el-select>
                 </el-form-item>
                 <el-form-item>
-                    <el-button type="primary">Save</el-button>
+                    <el-button type="primary" @click="onSubmit">{{ activeIndex === null ? 'Create' : 'Save' }}</el-button>
+                    <el-button v-if="activeIndex !== null" @click="resetForm(formRef)">Reset</el-button>
+                    <el-button v-if="activeIndex !== null" type="danger" @click="onDelete">Delete</el-button>
                 </el-form-item>
             </el-form>
         </div>
@@ -102,5 +232,8 @@ const selectActiveItem = (index: any) => {
     flex-basis: 75%;
     background-color: var(--mc-zinc-100);
     padding: 15px;
+}
+.w-100 {
+    width: 100%;
 }
 </style>

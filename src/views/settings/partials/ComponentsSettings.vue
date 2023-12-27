@@ -32,37 +32,30 @@ const activeItem = reactive({
     location: '',
 });
 
-const selectActiveItem = (index: any) => {
+const selectActiveItem = (index: number) => {
     showForm.value = true;
     activeIndex.value = index;
     Object.assign(activeItem, componentsData.value[index]);
 };
 
 const onSubmit = () => {
-    console.log('update!', activeItem);
     emit('update', activeItem);
-}
 
-const onCreate = () => {
-    console.log('submit!', activeItem);
-    emit('create', activeItem);
-}
+    showForm.value = false;
+    activeIndex.value = null;
+};
 
 const onDelete = () => {
-    console.log('delete!', activeItem.name);
-
     emit('delete', activeItem.name);
 
     showForm.value = false;
     activeIndex.value = null;
-}
+};
 
 const resetForm = (formEl: FormInstance | undefined) => {
-    if (!formEl) return;
-    console.log('reset!', props.components);
-    if(activeIndex.value === null) return;
+    if (!formEl || activeIndex.value === null) return;
     Object.assign(activeItem, componentsData.value[activeIndex.value]);
-}
+};
 
 const addItem = () => {
     showForm.value = true;
@@ -79,7 +72,7 @@ const addItem = () => {
             headers: null,
             location: '',
         });
-}
+};
 </script>
 
 <template>
@@ -94,11 +87,9 @@ const addItem = () => {
             </div>
         </el-card>
         <div class="form-container">
-            {{ activeItem }}
-
             <el-form v-if="showForm" ref="formRef" :model="activeItem" label-width="120px">
                 <el-form-item label="Name" prop="name">
-                    <el-input v-model="activeItem.name" />
+                    <el-input v-model="activeItem.name" :disabled="activeIndex !== null" />
                 </el-form-item>
                 <el-form-item label="Category">
                     <el-input v-model="activeItem.category" />
@@ -107,7 +98,7 @@ const addItem = () => {
                     <el-input v-model="activeItem.tags" />
                 </el-form-item>
                 <el-form-item label="Connector Type">
-                    <el-select v-model="activeItem.connectorType">
+                    <el-select v-model="activeItem.connectorType" class="w-100">
                         <el-option label="HTTP" value="HTTP" />
                         <el-option label="URL" value="URL" />
                         <el-option label="DISTRIBUTEME" value="DISTRIBUTEME" />
@@ -125,16 +116,15 @@ const addItem = () => {
 <!--                <el-form-item label="Data">
                     <el-input v-model="activeItem.data" />
                 </el-form-item>-->
-                <el-form-item label="Headers">
+<!--                <el-form-item label="Headers">
                     <el-input v-model="activeItem.headers" />
-                </el-form-item>
+                </el-form-item>-->
                 <el-form-item label="Location">
                     <el-input v-model="activeItem.location" />
                 </el-form-item>
                 <el-form-item>
-                    <el-button v-if="activeIndex !== null" type="primary" @click="onSubmit">Save</el-button>
-                    <el-button v-if="activeIndex === null" type="primary" @click="onCreate">Create</el-button>
-                    <el-button @click="resetForm(formRef)">Reset</el-button>
+                    <el-button type="primary" @click="onSubmit">{{ activeIndex === null ? 'Create' : 'Save' }}</el-button>
+                    <el-button v-if="activeIndex !== null" @click="resetForm(formRef)">Reset</el-button>
                     <el-button v-if="activeIndex !== null" type="danger" @click="onDelete">Delete</el-button>
                 </el-form-item>
             </el-form>
@@ -159,5 +149,8 @@ const addItem = () => {
     flex-basis: 75%;
     background-color: var(--mc-zinc-100);
     padding: 15px;
+}
+.w-100 {
+    width: 100%;
 }
 </style>
