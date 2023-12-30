@@ -1,11 +1,12 @@
 import ApiService from '@/services/ApiService.ts';
+import {IChart, IComponent, IView} from "@/types/interfaces.ts";
 
 export default class MoskitoService {
   public static fetchViews(): Promise<any> {
     return ApiService.getAndReturnData('configuration/views');
   }
 
-  public static updateView(data: any): Promise<any> {
+  public static updateView(data: IView): Promise<any> {
     return ApiService.postAndReturnData('configuration/views', data);
   }
 
@@ -17,7 +18,7 @@ export default class MoskitoService {
     return ApiService.getAndReturnData('configuration/components');
   }
 
-  public static updateComponent(data: any): Promise<any> {
+  public static updateComponent(data: IComponent): Promise<any> {
     return ApiService.postAndReturnData('configuration/components', data);
   }
 
@@ -27,6 +28,10 @@ export default class MoskitoService {
 
   public static fetchCharts(): Promise<any> {
     return ApiService.getAndReturnData('configuration/charts');
+  }
+
+  public static updateChart(data: IChart): Promise<any> {
+    return ApiService.postAndReturnData('configuration/charts', data);
   }
 
   public static deleteChart(name: string): Promise<any> {

@@ -1,22 +1,23 @@
 <script setup lang="ts">
 import {computed, reactive, ref} from "vue";
 import {FormInstance} from "element-plus";
+import {IChart, IComponent, IView} from "@/types/interfaces.ts";
 
 const props = defineProps({
     views: {
-        type: Array<any>,
+        type: Array<IView>,
         default: [],
     },
     chartOptions: {
-        type: Array<any>,
+        type: Array<IChart>,
         default: [],
     },
     componentsOptions: {
-        type: Array<any>,
+        type: Array<IComponent>,
         default: [],
     },
 });
-const emit = defineEmits(['create', 'delete', 'update']);
+const emit = defineEmits(['delete', 'update']);
 
 const formRef = ref<FormInstance>();
 const viewsData = computed(() => {
@@ -24,7 +25,7 @@ const viewsData = computed(() => {
 });
 const showForm = ref<boolean>(false);
 const activeIndex = ref<number | null>(null);
-const activeItem = reactive<any>({
+const activeItem = reactive<IView>({
     name: '',
     chartTags: [],
     charts: [],
@@ -49,9 +50,9 @@ const componentsOptions = computed(() => {
     ];
 });
 
-const selectHelper = (newValue: string[], field: string) => {
+const selectHelper = (newValue: string[], fieldName: keyof IView) => {
     if (newValue.includes('*')) {
-        activeItem[field] = ['*'];
+        activeItem[fieldName] = ['*'];
     }
 };
 
@@ -69,10 +70,12 @@ const resetForm = (formEl: FormInstance | undefined) => {
 const addItem = () => {
     showForm.value = true;
     activeIndex.value = null;
+    formRef.value?.resetFields();
+
     Object.assign(
         activeItem,
         {
-            name: '',
+            name: null,
             chartTags: [],
             charts: [],
             componentCategories: [],
@@ -83,11 +86,18 @@ const addItem = () => {
         });
 }
 
-const onSubmit = () => {
-    emit('update', activeItem);
+const onSubmit = (formEl: FormInstance | undefined) => {
+    if (!formEl) return;
 
-    showForm.value = false;
-    activeIndex.value = null;
+    formEl.validate((valid) => {
+        if (valid) {
+            emit('update', activeItem);
+            showForm.value = false;
+            activeIndex.value = null;
+        } else {
+            return false;
+        }
+    });
 };
 
 const onDelete = () => {
@@ -110,7 +120,10 @@ const onDelete = () => {
         </el-card>
         <div class="form-container">
             <el-form v-if="showForm" ref="formRef" :model="activeItem" label-width="180px">
-                <el-form-item label="Name" prop="name">
+                <el-form-item
+                    label="Name"
+                    prop="name"
+                    :rules="{ required: true, message: 'Name can not be null', trigger: ['blur', 'change'] }">
                     <el-input v-model="activeItem.name" :disabled="activeIndex !== null" />
                 </el-form-item>
                 <el-form-item label="Charts">
@@ -206,8 +219,9 @@ const onDelete = () => {
                         <el-option label="All" value="*" />
                     </el-select>
                 </el-form-item>
+                <el-divider />
                 <el-form-item>
-                    <el-button type="primary" @click="onSubmit">{{ activeIndex === null ? 'Create' : 'Save' }}</el-button>
+                    <el-button type="primary" @click="onSubmit(formRef)">{{ activeIndex === null ? 'Create' : 'Save' }}</el-button>
                     <el-button v-if="activeIndex !== null" @click="resetForm(formRef)">Reset</el-button>
                     <el-button v-if="activeIndex !== null" type="danger" @click="onDelete">Delete</el-button>
                 </el-form-item>

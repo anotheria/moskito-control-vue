@@ -3,18 +3,18 @@ import MoskitoService from "@/services/MoskitoService.ts";
 import {onMounted, ref} from "vue";
 import ComponentsSettings from "@/views/settings/partials/ComponentsSettings.vue";
 import ViewsSettings from "@/views/settings/partials/ViewsSettings.vue";
+import ChartsSettings from "@/views/settings/partials/ChartsSettings.vue";
+import {IChart, IComponent, ISettingsContent, IView} from "@/types/interfaces.ts";
 
 
 const activeTab = ref<'components' | 'views'| 'charts'>('components');
-const activeItem = ref<any>(null);
-
-const content = ref<any>({
+const content = ref<ISettingsContent>({
     components: [],
     views: [],
     charts: [],
 });
 
-const updateComponent = (component: any) => {
+const updateComponent = (component: IComponent) => {
     console.log('updateComponent!', component);
 
     MoskitoService.updateComponent(component).then((response) => {
@@ -36,7 +36,7 @@ const deleteComponent = (name: string) => {
     });
 };
 
-const updateView = (view: any) => {
+const updateView = (view: IView) => {
     console.log('create view!', view);
 
     MoskitoService.updateView(view).then((response) => {
@@ -47,13 +47,35 @@ const updateView = (view: any) => {
     });
 };
 
-const deleteView = (name: any) => {
+const deleteView = (name: string) => {
     console.log('delete view!', name);
 
     MoskitoService.deleteView(name).then((response) => {
         console.log(response);
         MoskitoService.fetchViews().then((response) => {
             content.value.views = response.results.views;
+        });
+    });
+};
+
+const updateChart = (chart: IChart) => {
+    console.log('create chart!', chart);
+
+    MoskitoService.updateChart(chart).then((response) => {
+        console.log(response);
+        MoskitoService.fetchCharts().then((response) => {
+            content.value.charts = response.results.charts;
+        });
+    });
+};
+
+const deleteChart = (name: string) => {
+    console.log('delete chart!', name);
+
+    MoskitoService.deleteChart(name).then((response) => {
+        console.log(response);
+        MoskitoService.fetchCharts().then((response) => {
+            content.value.charts = response.results.charts;
         });
     });
 };
@@ -96,16 +118,12 @@ onMounted(() => {
                     />
                 </el-tab-pane>
                 <el-tab-pane label="Charts" name="charts">
-                    <div class="content">
-                        <el-card class="list-container">
-                            <div v-for="item in content.charts">
-                                <el-button link @click="activeItem = item"><span>{{ item.name }}</span></el-button>
-                            </div>
-                        </el-card>
-                        <div class="form-container">
-                            {{ activeItem }}
-                        </div>
-                    </div>
+                    <charts-settings
+                        v-if="content.charts.length"
+                        :charts="content.charts"
+                        @update="updateChart($event)"
+                        @delete="deleteChart($event)"
+                    />
                 </el-tab-pane>
                 <el-tab-pane label="Views" name="views">
                     <views-settings
