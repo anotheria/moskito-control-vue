@@ -45,10 +45,10 @@ const openComponentSetting = async (name: string): Promise<void> => {
                 activeComponentConnectorInfo.value = Object.keys(res.results ?? {}).map(key => ({ key, value: res.results[key] }));
             }),
         ]);
+
+        dialogVisible.value = true;
     } catch (error) {
         console.error("Error:", error);
-    } finally {
-        dialogVisible.value = true;
     }
 };
 </script>
