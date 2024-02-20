@@ -123,7 +123,7 @@ const removeHeader = (item: IHeader) => {
                     <el-input v-model="activeItem.name" :disabled="activeIndex !== null" />
                 </el-form-item>
                 <el-form-item label="Category">
-                    <el-input v-model="activeItem.category" />
+                    <el-input v-model="activeItem.category"/>
                 </el-form-item>
                 <el-form-item label="Tags">
                     <el-input v-model="activeItem.tags" />

@@ -1,5 +1,5 @@
 import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router';
-import Dashboard from '@/views/Dashboard.vue';
+import Dashboard from '@/views/dashboard/Dashboard.vue';
 import Settings from '@/views/settings/Settings.vue';
 
 const routes: Array<RouteRecordRaw> = [
