@@ -111,7 +111,7 @@ const removeHeader = (item: IHeader) => {
             </div>
 
             <div style="margin-top: 15px">
-                <el-button type="primary" @click="addItem">Add</el-button>
+                <el-button type="info" @click="addItem">New</el-button>
             </div>
         </el-card>
         <div class="form-container">

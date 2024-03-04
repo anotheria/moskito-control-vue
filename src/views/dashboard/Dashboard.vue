@@ -74,19 +74,32 @@ const openComponentSetting = async (name: string): Promise<void> => {
           </div>
       </div>
     <div class="data-panel">
-        <div v-if="showData" style="margin: 15px">
-            <div v-for="(value, key) in groupedComponents" style="margin: 15px">
-                <div style="margin-bottom: 15px">{{key}}</div>
-                <el-button
-                    v-for="component in value"
-                    @click="openComponentSetting(component.name)"
-                    style="margin-right: 8px"
-                    :size="'large'"
-                >
-                    <span class="status" :style="{ 'background-color': getStatusColor(component.color) }" />
-                    {{ component.name }}
-                </el-button>
-                <el-divider />
+        <div v-if="showData">
+            <div v-for="(value, key) in groupedComponents">
+                <el-card shadow="never">
+                    <template #header>
+                        <div>
+                            <span>{{key}}</span>
+                        </div>
+                    </template>
+
+                    <span v-for="component in value">
+                        <el-tooltip
+                            effect="dark"
+                            :content="component.ISO8601Timestamp"
+                            placement="top"
+                        >
+                            <el-button
+                                @click="openComponentSetting(component.name)"
+                                style="margin-right: 8px"
+                                :size="'large'"
+                            >
+                                <span class="status" :style="{ 'background-color': getStatusColor(component.color) }" />
+                                {{ component.name }}
+                            </el-button>
+                        </el-tooltip>
+                    </span>
+                </el-card>
             </div>
         </div>
     </div>
