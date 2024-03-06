@@ -45,14 +45,17 @@ const openComponentSetting = async (name: string): Promise<void> => {
         component.value.capabilities = res.results;
 
         await Promise.all([
-            res.results.threshold && MoskitoService.getComponentThresholds(component.value.name).then((res: any) => {
+            res.results.thresholds && MoskitoService.getComponentThresholds(component.value.name).then((res: any) => {
                 component.value.thresholds = res.results.thresholds ?? [];
             }),
             res.results.config && MoskitoService.getComponentConfig(component.value.name).then((res: any) => {
                 component.value.config = res.results.config ?? {};
             }),
-            res.results.info && MoskitoService.getComponentConnectorInfo(component.value.name).then((res: any) => {
+            res.results.connectorInfo && MoskitoService.getComponentConnectorInfo(component.value.name).then((res: any) => {
                 component.value.connectorInfo = Object.keys(res.results ?? {}).map(key => ({ key, value: res.results[key] }));
+            }),
+            res.results.componentInfo && MoskitoService.getComponentComponentInformation(component.value.name).then((res: any) => {
+                component.value.componentInfo = Object.keys(res.results ?? {}).map(key => ({ key, value: res.results[key] }));
             }),
         ]);
 

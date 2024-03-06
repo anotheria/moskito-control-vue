@@ -67,7 +67,11 @@ export default class MoskitoService {
   }
 
   public static getComponentConnectorInfo(componentName: string): Promise<any> {
-    return ApiService.getAndReturnData(`component/${componentName}/info`);
+    return ApiService.getAndReturnData(`component/${componentName}/connectorInfo`);
+  }
+
+  public static getComponentComponentInformation(componentName: string): Promise<any> {
+    return ApiService.getAndReturnData(`component/${componentName}/componentInfo`);
   }
 
   public static getComponentThresholds(componentName: string): Promise<any> {
