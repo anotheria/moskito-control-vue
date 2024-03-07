@@ -22,7 +22,7 @@ const activeIndex = ref<number | null>(null);
 const activeItem = reactive<IChart>({
     name: null,
     tags: null,
-    // limit: 0,
+    limit: -1,
     lines: [],
 });
 
@@ -62,7 +62,7 @@ const addItem = () => {
         {
             name: null,
             tags: null,
-            // limit: 0,
+            limit: -1,
             lines: [],
         });
 };
@@ -72,7 +72,9 @@ const onSubmit = (formEl: FormInstance | undefined) => {
 
     formEl.validate((valid) => {
         if (valid) {
-            delete activeItem.limit;
+            if (activeItem.limit == 0) {
+                activeItem.limit = -1;
+            }
             emit('update', activeItem);
             showForm.value = false;
             activeIndex.value = null;
@@ -117,26 +119,14 @@ const onDelete = () => {
                 <el-form-item label="Tags">
                     <el-input v-model="activeItem.tags" />
                 </el-form-item>
-<!--                <el-form-item label="Limit">
+                <el-form-item label="Limit">
                     <el-input v-model="activeItem.limit" type="number"/>
-                </el-form-item>-->
+                </el-form-item>
                 <el-form-item label="Lines">
                     <el-button type="primary" @click="addChartLine">Add line</el-button>
                 </el-form-item>
                 <el-form-item v-for="(line) in activeItem.lines">
                     <div style="margin-right: 15px">
-<!--                        <el-form-item label="accumulator">
-                            <el-input v-model="line.accumulator" :label="'Accumulator'" placeholder="Accumulator" style="margin-bottom: 5px"/>
-                        </el-form-item>
-                        <el-form-item label="caption">
-                            <el-input v-model="line.caption" :label="'Caption'" placeholder="Caption" style="margin-bottom: 5px"/>
-                        </el-form-item>
-                        <el-form-item label="component">
-                            <el-input v-model="line.component" placeholder="Component" style="margin-bottom: 5px"/>
-                        </el-form-item>
-                        <el-form-item label="componentTags">
-                            <el-input v-model="line.componentTags" placeholder="Component Tags"/>
-                        </el-form-item>-->
                         <el-input v-model="line.component" placeholder="Component" style="margin-bottom: 5px"/>
                         <el-input v-model="line.componentTags" placeholder="Component Tags" style="margin-bottom: 5px"/>
                         <el-input v-model="line.accumulator" :label="'Accumulator'" placeholder="Accumulator" style="margin-bottom: 5px"/>

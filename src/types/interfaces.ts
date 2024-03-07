@@ -41,6 +41,16 @@ export interface IHeader {
   value: string | null;
 }
 
+export interface IComponentData {
+  key: string | null;
+  value: string | null;
+}
+
+export interface IArrayDataItem {
+  key: string;
+  value: string;
+}
+
 export interface IView extends IObjectKeys {
   name: string | null;
   chartTags: Array<string> | null;

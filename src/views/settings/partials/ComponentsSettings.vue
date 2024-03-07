@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import {ref, reactive, computed} from "vue";
 import {FormInstance} from "element-plus";
-import {IComponent, IHeader} from "@/types/interfaces.ts";
+import {IArrayDataItem, IComponent, IComponentData, IHeader} from "@/types/interfaces.ts";
 
 
 const props = defineProps({
@@ -35,15 +35,19 @@ const selectActiveItem = (index: number) => {
     showForm.value = true;
     activeIndex.value = index;
     Object.assign(activeItem, componentsData.value[index]);
+    activeItem.data = Object.entries(activeItem.data).map(([key, value]) => ({key, value}));
 };
 
 const onSubmit = (formEl: FormInstance | undefined) => {
     if (!formEl) return;
 
-    activeItem.headers = (activeItem.headers ?? []).filter((header: IHeader) => header.key?.trim() !== '' && header.value?.trim() !== '');
+    activeItem.headers = (activeItem.headers ?? [])
+        .filter((header: IHeader) => header.key?.trim() !== '' && header.value?.trim() !== '');
 
     formEl.validate((valid) => {
         if (valid) {
+            activeItem.data = activeItem.data
+                .reduce((acc: Array<IArrayDataItem>, {key, value}: IArrayDataItem) => ({...acc, [key]: value}), {});
             emit('update', activeItem);
             showForm.value = false;
             activeIndex.value = null;
@@ -63,6 +67,7 @@ const onDelete = () => {
 const resetForm = (formEl: FormInstance | undefined) => {
     if (!formEl || activeIndex.value === null) return;
     Object.assign(activeItem, componentsData.value[activeIndex.value]);
+    activeItem.data = Object.entries(activeItem.data).map(([key, value]) => ({key, value}));
 };
 
 const addItem = () => {
@@ -93,12 +98,28 @@ const addHeader = () => {
     });
 };
 
+const addData = () => {
+    if (!activeItem.data) activeItem.data = [];
+    activeItem.data.push({
+        key: '',
+        value: '',
+    });
+};
+
 const removeHeader = (item: IHeader) => {
     if (!activeItem.headers) return false;
 
     const index = activeItem.headers.indexOf(item);
     if (index !== -1) {
         activeItem.headers.splice(index, 1);
+    }
+};
+const removeData = (item: IComponentData) => {
+    if (!activeItem.data) return false;
+
+    const index = activeItem.data.indexOf(item);
+    if (index !== -1) {
+        activeItem.data.splice(index, 1);
     }
 };
 </script>
@@ -144,9 +165,6 @@ const removeHeader = (item: IHeader) => {
                 <el-form-item label="Credentials">
                     <el-input v-model="activeItem.credentials" />
                 </el-form-item>
-<!--                <el-form-item label="Data">
-                    <el-input v-model="activeItem.data" />
-                </el-form-item>-->
                 <el-form-item label="Location">
                     <el-input v-model="activeItem.location" />
                 </el-form-item>
@@ -159,6 +177,16 @@ const removeHeader = (item: IHeader) => {
                         <el-input v-model="header.value" placeholder="Header value" />
                     </div>
                     <el-button class="mt-2" type="danger" @click.prevent="removeHeader(header)">Delete header</el-button>
+                </el-form-item>
+                <el-form-item label="Data">
+                    <el-button type="primary" @click="addData">Add data</el-button>
+                </el-form-item>
+                <el-form-item v-for="(data) in activeItem.data">
+                    <div style="margin-right: 15px">
+                        <el-input v-model="data.key" placeholder="Data key" style="margin-bottom: 5px"/>
+                        <el-input v-model="data.value" placeholder="Data value" />
+                    </div>
+                    <el-button class="mt-2" type="danger" @click.prevent="removeData(data)">Delete data</el-button>
                 </el-form-item>
                 <el-divider />
                 <el-form-item>
