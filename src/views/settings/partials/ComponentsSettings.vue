@@ -2,6 +2,7 @@
 import {ref, reactive, computed} from "vue";
 import {FormInstance} from "element-plus";
 import {IArrayDataItem, IComponent, IComponentData, IHeader} from "@/types/interfaces.ts";
+import {Folder, FolderOpened} from '@element-plus/icons-vue'
 
 
 const props = defineProps({
@@ -128,7 +129,13 @@ const removeData = (item: IComponentData) => {
     <div class="content">
         <el-card class="list-container">
             <div v-for="(item, index) in componentsData">
-                <el-button link @click="selectActiveItem(index)"><span>{{ item.name }}</span></el-button>
+                <el-button
+                    link
+                    :icon="activeIndex === index ? FolderOpened : Folder"
+                    @click="selectActiveItem(index)"
+                >
+                    <span>{{ item.name }}</span>
+                </el-button>
             </div>
 
             <div style="margin-top: 15px">

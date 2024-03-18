@@ -77,4 +77,8 @@ export default class MoskitoService {
   public static getComponentThresholds(componentName: string): Promise<any> {
     return ApiService.getAndReturnData(`component/${componentName}/thresholds`);
   }
+
+  public static getComponentAccumulators(componentName: string): Promise<any> {
+    return ApiService.getAndReturnData(`component/${componentName}/accumulators`);
+  }
 }

@@ -13,8 +13,10 @@ declare module 'vue' {
     ElDivider: typeof import('element-plus/es')['ElDivider']
     ElForm: typeof import('element-plus/es')['ElForm']
     ElFormItem: typeof import('element-plus/es')['ElFormItem']
+    ElIcon: typeof import('element-plus/es')['ElIcon']
     ElInput: typeof import('element-plus/es')['ElInput']
     ElInputNumber: typeof import('element-plus/es')['ElInputNumber']
+    ElNotification: typeof import('element-plus/es')['ElNotification']
     ElOption: typeof import('element-plus/es')['ElOption']
     ElSelect: typeof import('element-plus/es')['ElSelect']
     ElTable: typeof import('element-plus/es')['ElTable']
@@ -27,5 +29,6 @@ declare module 'vue' {
     RouterView: typeof import('vue-router')['RouterView']
     ViewControl: typeof import('./src/components/ViewControl.vue')['default']
     VueSelectorPanel: typeof import('./src/components/VueSelectorPanel.vue')['default']
+    VueStatus: typeof import('./src/components/VueStatus.vue')['default']
   }
 }

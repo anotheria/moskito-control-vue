@@ -3,8 +3,11 @@ import {computed, onMounted, ref} from 'vue';
 import {useMainStore} from '@/store/mainStore.ts';
 import MoskitoService from '@/services/MoskitoService.ts';
 import ComponentDetails from "@/views/dashboard/partials/ComponentDetails.vue";
-import {getStatusColor} from "@/types/consts.ts";
+import {getAverageStatus} from "@/types/consts.ts";
 import VueSelectorPanel from "@/components/VueSelectorPanel.vue";
+import VueStatus from "@/components/VueStatus.vue";
+import {Clock} from '@element-plus/icons-vue';
+import {ElMessage, ElNotification} from 'element-plus'
 
 const mainStore = useMainStore();
 
@@ -36,9 +39,10 @@ const groupedComponents = computed(() => {
     }, {});
 });
 
-const openComponentSetting = async (name: string): Promise<void> => {
+const openComponentSetting = async (name: string, status: string): Promise<void> => {
     dialogVisible.value = false;
     component.value.name = name;
+    component.value.color = status;
 
     try {
         const res = await MoskitoService.getComponentCapabilities(component.value.name);
@@ -57,11 +61,26 @@ const openComponentSetting = async (name: string): Promise<void> => {
             res.results.componentInfo && MoskitoService.getComponentComponentInformation(component.value.name).then((res: any) => {
                 component.value.componentInfo = Object.keys(res.results ?? {}).map(key => ({ key, value: res.results[key] }));
             }),
+            res.results.accumulators && MoskitoService.getComponentAccumulators(component.value.name).then((res: any) => {
+                component.value.accumulators = res.results.accumulators.map((acc: any) => ({ name: acc }));
+            }),
         ]);
 
         dialogVisible.value = true;
     } catch (error) {
         console.error("Error:", error);
+
+        /*ElNotification({
+            title: 'Error',
+            message: 'An error occurred while fetching component capabilities',
+            type: 'error',
+        });*/
+
+        ElMessage({
+            showClose: true,
+            message: 'An error occurred while fetching component capabilities',
+            type: 'error',
+        })
     }
 };
 </script>
@@ -82,6 +101,7 @@ const openComponentSetting = async (name: string): Promise<void> => {
                 <el-card shadow="never">
                     <template #header>
                         <div>
+                            <vue-status :status-color="getAverageStatus(value.map((component: any) => component.color))"/>
                             <span>{{key}}</span>
                         </div>
                     </template>
@@ -89,15 +109,28 @@ const openComponentSetting = async (name: string): Promise<void> => {
                     <span v-for="component in value">
                         <el-tooltip
                             effect="dark"
-                            :content="component.ISO8601Timestamp"
                             placement="top"
                         >
+                            <template #content>
+                                <div v-for="msg in component.messages">
+                                    <span>
+                                    {{ msg }}
+                                    </span>
+                                    <br />
+                                </div>
+                                <div class="tooltip-time">
+                                    <el-icon color="white">
+                                        <Clock />
+                                    </el-icon>
+                                    <span>{{ component.ISO8601Timestamp }}</span>
+                                </div>
+                            </template>
                             <el-button
-                                @click="openComponentSetting(component.name)"
+                                @click="openComponentSetting(component.name, component.color)"
                                 style="margin-right: 8px"
                                 :size="'large'"
                             >
-                                <span class="status" :style="{ 'background-color': getStatusColor(component.color) }" />
+                                <vue-status :status-color="component.color"/>
                                 {{ component.name }}
                             </el-button>
                         </el-tooltip>
@@ -142,5 +175,10 @@ const openComponentSetting = async (name: string): Promise<void> => {
     border-radius: 50%;
     margin-right: 8px;
     border: 1px solid var(--mc-zinc-200);
+}
+.tooltip-time {
+    display: flex;
+    align-items: center;
+    gap: 5px;
 }
 </style>
