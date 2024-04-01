@@ -6,6 +6,14 @@ export default class MoskitoService {
     return ApiService.getAndReturnData('configuration/views');
   }
 
+  public static fetchHistory(view: string): Promise<any> {
+    return ApiService.getAndReturnData(`/history/${view}`);
+  }
+
+  public static fetchChartLines(view: string): Promise<any> {
+    return ApiService.getAndReturnData(`/charts/lines/${view}`);
+  }
+
   public static updateView(data: IView): Promise<any> {
     return ApiService.postAndReturnData('configuration/views', data);
   }

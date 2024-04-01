@@ -6,15 +6,16 @@ import ComponentDetails from "@/views/dashboard/partials/ComponentDetails.vue";
 import {getAverageStatus} from "@/types/consts.ts";
 import VueSelectorPanel from "@/components/VueSelectorPanel.vue";
 import VueStatus from "@/components/VueStatus.vue";
-import {Clock} from '@element-plus/icons-vue';
-import {ElMessage, ElNotification} from 'element-plus'
+import {Clock, Right} from '@element-plus/icons-vue';
+import NotificationService from "@/services/NotificationService.ts";
 
 const mainStore = useMainStore();
-
 const getViews = async () => {
   const { results: { views } } = await MoskitoService.getControl();
   mainStore.views = views;
   mainStore.setInitialActiveView();
+  // await mainStore.fetchHistory();
+  // await getHistory();
   showData.value = true;
 }
 
@@ -27,6 +28,7 @@ const dialogVisible = ref(false);
 const component = ref<any>({});
 
 const components = computed(() => mainStore.views?.find((view: any) => view.name === mainStore.activeView)?.components ?? []);
+const historyData = computed(() => mainStore.historyData);
 
 const groupedComponents = computed(() => {
     return components.value?.reduce((acc: any, component: any) => {
@@ -69,77 +71,126 @@ const openComponentSetting = async (name: string, status: string): Promise<void>
         dialogVisible.value = true;
     } catch (error) {
         console.error("Error:", error);
+        NotificationService.notifyFailure('An error occurred while fetching component capabilities')
+    }
+};
 
-        /*ElNotification({
-            title: 'Error',
-            message: 'An error occurred while fetching component capabilities',
-            type: 'error',
-        });*/
-
-        ElMessage({
-            showClose: true,
-            message: 'An error occurred while fetching component capabilities',
-            type: 'error',
-        })
+const getChartData = (index: number) => {
+    return {
+        chartOptions: {
+            chart: {
+                type: 'line',
+                zoom: {
+                    enabled: true
+                }
+            },
+            dataLabels: {
+                enabled: false
+            },
+            stroke: {
+                curve: 'straight'
+            },
+            title: {
+                text: mainStore.getChartData[index]?.name,
+                align: 'left'
+            },
+            grid: {
+                row: {
+                    colors: ['#f3f3f3', 'transparent'],
+                    opacity: 0.5
+                },
+            },
+            xaxis: {
+                categories: mainStore.getChartData[index]?.captions,
+            }
+        },
+        seriesData: mainStore.getChartData[index]?.lines.map((line: any) => ({ name: line["lineName"], data: line["values"] }))
     }
 };
 </script>
 
 <template>
-  <div class="dashboard">
-      <component-details :dialog-visible="dialogVisible" :component="component"/>
-    <vue-selector-panel />
-      <div class="info-panel">
-          info panel with controls Settings | Data Repository
-          <div class="actions-container">
-              <el-button type="info" @click="$router.push('/settings')">Settings</el-button>
-          </div>
-      </div>
-    <div class="data-panel">
-        <div v-if="showData">
-            <div v-for="(value, key) in groupedComponents">
-                <el-card shadow="never">
-                    <template #header>
-                        <div>
-                            <vue-status :status-color="getAverageStatus(value.map((component: any) => component.color))"/>
-                            <span>{{key}}</span>
-                        </div>
-                    </template>
+    <div class="dashboard">
+        <component-details :dialog-visible="dialogVisible" :component="component"/>
+        <vue-selector-panel />
+        <div class="info-panel">
+            info panel with controls Settings | Data Repository
+            <div class="actions-container">
+                <el-button type="info" @click="$router.push('/settings')">Settings</el-button>
+            </div>
+        </div>
 
-                    <span v-for="component in value">
-                        <el-tooltip
-                            effect="dark"
-                            placement="top"
-                        >
-                            <template #content>
-                                <div v-for="msg in component.messages">
-                                    <span>
-                                    {{ msg }}
-                                    </span>
-                                    <br />
-                                </div>
-                                <div class="tooltip-time">
-                                    <el-icon color="white">
-                                        <Clock />
-                                    </el-icon>
-                                    <span>{{ component.ISO8601Timestamp }}</span>
-                                </div>
-                            </template>
-                            <el-button
-                                @click="openComponentSetting(component.name, component.color)"
-                                style="margin-right: 8px"
-                                :size="'large'"
+        <div v-if="showData" class="data-panel">
+            <div v-if="mainStore.getShowStatus">
+                <div v-for="(value, key) in groupedComponents">
+                    <el-card shadow="never">
+                        <template #header>
+                            <div>
+                                <vue-status :status-color="getAverageStatus(value.map((component: any) => component.color))"/>
+                                <span>{{key}}</span>
+                            </div>
+                        </template>
+
+                        <span v-for="component in value">
+                            <el-tooltip
+                                effect="dark"
+                                placement="top"
                             >
-                                <vue-status :status-color="component.color"/>
-                                {{ component.name }}
-                            </el-button>
-                        </el-tooltip>
-                    </span>
-                </el-card>
+                                <template #content>
+                                    <div v-for="msg in component.messages">
+                                        <span>
+                                            {{ msg }}
+                                        </span>
+                                        <br />
+                                    </div>
+                                    <div class="tooltip-time">
+                                        <el-icon color="white">
+                                            <Clock />
+                                        </el-icon>
+                                        <span>{{ component.ISO8601Timestamp }}</span>
+                                    </div>
+                                </template>
+                                <el-button
+                                    @click="openComponentSetting(component.name, component.color)"
+                                    style="margin-right: 8px"
+                                    :size="'large'"
+                                >
+                                    <vue-status :status-color="component.color"/>
+                                    {{ component.name }}
+                                </el-button>
+                            </el-tooltip>
+                        </span>
+                    </el-card>
+                </div>
+            </div>
+            <div v-if="mainStore.getShowHistory">
+                <el-table v-if="historyData" :data="historyData" stripe>
+                    <el-table-column prop="isoTimestamp" label="Timestamp" />
+                    <el-table-column prop="componentName" label="Name" />
+                    <el-table-column prop="newMessages[0]" label="Reason" />
+                    <el-table-column label="Status change">
+                        <template #default="scope">
+                            <div style="display: flex; align-items: center">
+                                <vue-status :status-color="scope.row.oldStatus"/>
+                                <el-icon style="margin-right: 8px;"><Right /></el-icon>
+                                <vue-status :status-color="scope.row.newStatus"/>
+                            </div>
+                        </template>
+                    </el-table-column>
+                </el-table>
+            </div>
+            <div v-if="mainStore.getShowCharts && mainStore.getChartData.length">
+                <div v-for="(chart, index) in mainStore.getChartData">
+                    <apexchart
+                        height="500"
+                        :options="getChartData(index).chartOptions"
+                        :series="getChartData(index).seriesData"
+                    />
+                    <el-divider />
+                </div>
             </div>
         </div>
     </div>
-  </div>
 </template>
 
 <style lang="scss" scoped>

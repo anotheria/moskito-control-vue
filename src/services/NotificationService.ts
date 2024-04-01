@@ -8,11 +8,12 @@ export default class NotificationService {
     });
   }
 
-  public static notifyFailure() {
+  public static notifyFailure(text?: string) {
     ElMessage({
-      message: 'Something very unexpected happened. Our team is working on a solution already.',
+      message: text || 'Something very unexpected happened. Our team is working on a solution already.',
       type: 'error',
       customClass: 'test-message',
+      showClose: true,
     });
   }
 

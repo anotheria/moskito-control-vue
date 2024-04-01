@@ -1,7 +1,37 @@
+<script lang="ts" setup>
+import {
+    Document,
+    Menu as IconMenu,
+    Location,
+    Setting,
+} from '@element-plus/icons-vue';
+import {useMainStore} from "@/store/mainStore.ts";
+
+
+const mainStore = useMainStore();
+const handleOpen = (key: string, keyPath: string[]) => {
+    console.log(key, keyPath);
+    mainStore.setDashboardMode(key);
+}
+
+</script>
 <template>
   <div class="dashboard-wrapper">
     <aside class="aside-panel">
-      sidebar
+        <el-menu default-active="status"
+                 style="margin-top: 100px;"
+                 @select="handleOpen"
+        >
+            <el-menu-item index="status">
+                <span>Status</span>
+            </el-menu-item>
+            <el-menu-item index="charts">
+                <span>Charts</span>
+            </el-menu-item>
+            <el-menu-item index="history">
+                <span>History</span>
+            </el-menu-item>
+        </el-menu>
     </aside>
     <main class="content">
       <router-view/>
