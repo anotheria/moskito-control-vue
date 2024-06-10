@@ -89,4 +89,16 @@ export default class MoskitoService {
   public static getComponentAccumulators(componentName: string): Promise<any> {
     return ApiService.getAndReturnData(`component/${componentName}/accumulators`);
   }
+
+  public static getAccumulatorsCharts(data: any): Promise<any> {
+    return ApiService.postAndReturnData(`component/charts`, data);
+  }
+
+  public static getComponentActions(componentName: string): Promise<any> {
+    return ApiService.getAndReturnData(`component/${componentName}/actions`);
+  }
+
+  public static getComponentHistory(componentName: string): Promise<any> {
+    return ApiService.getAndReturnData(`component/${componentName}/history`);
+  }
 }

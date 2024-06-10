@@ -1,38 +1,56 @@
 <script lang="ts" setup>
-import {
-    Document,
-    Menu as IconMenu,
-    Location,
-    Setting,
-} from '@element-plus/icons-vue';
+import {Open, TrendCharts, Files} from '@element-plus/icons-vue';
+import {ref} from 'vue';
 import {useMainStore} from "@/store/mainStore.ts";
 
 
 const mainStore = useMainStore();
-const handleOpen = (key: string, keyPath: string[]) => {
-    console.log(key, keyPath);
-    mainStore.setDashboardMode(key);
-}
+const widgetSettings = ref(mainStore.getDashboardStatuses);
+
+const setActiveWidget = (event: { index: keyof typeof widgetSettings.value }) => {
+    widgetSettings.value[event.index] = !widgetSettings.value[event.index];
+    mainStore.setDashboardMode(widgetSettings.value);
+};
 
 </script>
 <template>
   <div class="dashboard-wrapper">
-    <aside class="aside-panel">
-        <el-menu default-active="status"
-                 style="margin-top: 100px;"
-                 @select="handleOpen"
-        >
-            <el-menu-item index="status">
-                <span>Status</span>
-            </el-menu-item>
-            <el-menu-item index="charts">
-                <span>Charts</span>
-            </el-menu-item>
-            <el-menu-item index="history">
-                <span>History</span>
-            </el-menu-item>
-        </el-menu>
-    </aside>
+      <aside class="aside-panel">
+          <el-menu default-active="status"
+                   style="margin-top: 100px;"
+          >
+              <el-menu-item
+                  index="status"
+                  :class="widgetSettings['status'] ? 'active-widget' : 'not-active-widget'"
+                  @click="setActiveWidget"
+              >
+                  <el-icon>
+                      <Open />
+                  </el-icon>
+                  <span>Status</span>
+              </el-menu-item>
+              <el-menu-item
+                  index="charts"
+                  :class="widgetSettings['charts'] ? 'active-widget' : 'not-active-widget'"
+                  @click="setActiveWidget"
+              >
+                  <el-icon>
+                      <TrendCharts />
+                  </el-icon>
+                  <span>Charts</span>
+              </el-menu-item>
+              <el-menu-item
+                  index="history"
+                  :class="widgetSettings['history'] ? 'active-widget' : 'not-active-widget'"
+                  @click="setActiveWidget"
+              >
+                  <el-icon>
+                      <Files />
+                  </el-icon>
+                  <span>History</span>
+              </el-menu-item>
+          </el-menu>
+      </aside>
     <main class="content">
       <router-view/>
     </main>
@@ -57,6 +75,7 @@ const handleOpen = (key: string, keyPath: string[]) => {
   --mc-status-orange: #ff8400;
   --mc-status-yellow: #f4e300;
   --mc-status-green: #94cc19;
+    --mc-status-none: #cccccc;
 }
 #app {
   font-family: Avenir, Helvetica, Arial, sans-serif;
@@ -75,5 +94,12 @@ const handleOpen = (key: string, keyPath: string[]) => {
   display: flex;
   flex-direction: column;
   padding: 0 30px 30px;
+}
+
+.active-widget {
+    color: var(--el-menu-active-color) !important;
+}
+.not-active-widget {
+    color: var(--el-menu-text-color) !important;
 }
 </style>

@@ -22,8 +22,12 @@ export const KEY_LANGUAGE = LANGUAGE.KEY;
 export const PASSWORD_LENGTH = 6;
 
 export const STATUS_CODE_MAP = {
-  'GREEN': 0,
-  'RED': 1,
+  'NONE': 0,
+  'GREEN': 1,
+  'YELLOW': 2,
+  'ORANGE': 3,
+  'RED': 4,
+  'PURPLE': 5,
 };
 
 export const getAverageStatus = (statuses: Array<string>): string => {
@@ -32,7 +36,7 @@ export const getAverageStatus = (statuses: Array<string>): string => {
   const averageStatus = Object.keys(STATUS_CODE_MAP)
       .find(key => STATUS_CODE_MAP[key as keyof typeof STATUS_CODE_MAP] === Math.max(...statusValues));
 
-  return averageStatus || '';
+  return averageStatus || 'NONE';
 };
 
 export const getStatusColor = (statusColor: string) => {

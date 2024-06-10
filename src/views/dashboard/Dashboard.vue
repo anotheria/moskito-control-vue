@@ -66,6 +66,12 @@ const openComponentSetting = async (name: string, status: string): Promise<void>
             res.results.accumulators && MoskitoService.getComponentAccumulators(component.value.name).then((res: any) => {
                 component.value.accumulators = res.results.accumulators.map((acc: any) => ({ name: acc }));
             }),
+            res.results.actions && MoskitoService.getComponentActions(component.value.name).then((res: any) => {
+                component.value.actions = res.results.actions ?? [];
+            }),
+            res.results.history && MoskitoService.getComponentHistory(component.value.name).then((res: any) => {
+                component.value.history = res.results.history ?? [];
+            }),
         ]);
 
         dialogVisible.value = true;
@@ -88,7 +94,8 @@ const getChartData = (index: number) => {
                 enabled: false
             },
             stroke: {
-                curve: 'straight'
+                curve: 'straight',
+                width: 1
             },
             title: {
                 text: mainStore.getChartData[index]?.name,
@@ -102,6 +109,10 @@ const getChartData = (index: number) => {
             },
             xaxis: {
                 categories: mainStore.getChartData[index]?.captions,
+                /*labels: {
+                    format: 'HH:mm',
+                },
+                type: 'datetime',*/
             }
         },
         seriesData: mainStore.getChartData[index]?.lines.map((line: any) => ({ name: line["lineName"], data: line["values"] }))
@@ -163,7 +174,23 @@ const getChartData = (index: number) => {
                     </el-card>
                 </div>
             </div>
+            <div v-if="mainStore.getShowCharts && mainStore.getChartData.length">
+                <div class="widget-header">
+                    <h4>Charts</h4>
+                </div>
+                <div v-for="(chart, index) in mainStore.getChartData">
+                    <apexchart
+                        height="500"
+                        :options="getChartData(index).chartOptions"
+                        :series="getChartData(index).seriesData"
+                    />
+                    <el-divider />
+                </div>
+            </div>
             <div v-if="mainStore.getShowHistory">
+                <div class="widget-header">
+                    <h4>History</h4>
+                </div>
                 <el-table v-if="historyData" :data="historyData" stripe>
                     <el-table-column prop="isoTimestamp" label="Timestamp" />
                     <el-table-column prop="componentName" label="Name" />
@@ -178,16 +205,6 @@ const getChartData = (index: number) => {
                         </template>
                     </el-table-column>
                 </el-table>
-            </div>
-            <div v-if="mainStore.getShowCharts && mainStore.getChartData.length">
-                <div v-for="(chart, index) in mainStore.getChartData">
-                    <apexchart
-                        height="500"
-                        :options="getChartData(index).chartOptions"
-                        :series="getChartData(index).seriesData"
-                    />
-                    <el-divider />
-                </div>
             </div>
         </div>
     </div>
@@ -231,5 +248,11 @@ const getChartData = (index: number) => {
     display: flex;
     align-items: center;
     gap: 5px;
+}
+
+.widget-header {
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 </style>

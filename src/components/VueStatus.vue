@@ -16,7 +16,8 @@ const status = computed(() => {
         'YELLOW': 'var(--mc-status-yellow)',
         'ORANGE': 'var(--mc-status-orange)',
         'RED': 'var(--mc-status-red)',
-        'PURPLE': 'var(--mc-status-purple)'
+        'PURPLE': 'var(--mc-status-purple)',
+        'NONE': 'var(--mc-status-none)',
     }[props.statusColor];
 })
 </script>

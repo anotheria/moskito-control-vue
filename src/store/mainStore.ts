@@ -33,6 +33,11 @@ export const useMainStore = defineStore({
     getShowStatus: (state) => state.showStatus,
     getShowHistory: (state) => state.showHistory,
     getShowCharts: (state) => state.showCharts,
+    getDashboardStatuses: (state) => ({
+      status: state.showStatus,
+      charts: state.showHistory,
+      history: state.showCharts,
+    }),
   },
 
   actions: {
@@ -44,28 +49,17 @@ export const useMainStore = defineStore({
       this.activeView = name;
       this.fetchHistory();
     },
-    setDashboardMode(mode: string) {
-      if (mode === 'status') {
-        this.showStatus = true;
-        this.showHistory = false;
-        this.showCharts = false;
-      } else if (mode === 'history') {
-        this.showHistory = true;
-        this.showStatus = false;
-        this.showCharts = false;
-      } else if(mode === 'charts') {
-        this.showCharts = true;
-        this.showStatus = false;
-        this.showHistory = false;
-      }
+    setDashboardMode(mode: any) {
+      this.showStatus = mode['status'];
+      this.showHistory = mode['history'];
+      this.showCharts = mode['charts'];
     },
     fetchHistory() {
       MoskitoService.fetchHistory(this.activeView).then((response: any) => {
-        this.historyData = response.historyItems || []
+        this.historyData = response.results.history || []
       });
 
       MoskitoService.fetchChartLines(this.activeView).then((response: any) => {
-        console.log(response);
         this.chartData = response.charts || [];
       });
     }
