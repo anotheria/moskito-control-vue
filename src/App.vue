@@ -58,10 +58,62 @@ const setActiveWidget = (event: { index: keyof typeof widgetSettings.value }) =>
 </template>
 
 <style scoped lang="scss">
-.active-widget {
+  .active-widget {
     color: var(--el-menu-active-color) !important;
-}
-.not-active-widget {
+  }
+
+  .not-active-widget {
     color: var(--el-menu-text-color) !important;
-}
+  }
+
+  .el-menu {
+    background-color: rgba(255, 255, 255, .2);
+    border: none;
+
+    &-item.is-active {
+      background-color: #5983ed;
+
+      span, i {
+        color: #ffffff;
+      }
+
+      &:hover {
+        background-color: #5983ed;
+
+        span, i {
+          color: #ffffff;
+        }
+      }
+    }
+  }
+
+  .not-active-widget {
+
+    span, i {
+      color: #ffffff;
+    }
+
+    &:hover {
+      background-color: rgba(89, 131, 237, .5);
+
+      span, i {
+        color: #ffffff;
+      }
+    }
+  }
+
+  .el-menu-item {
+
+    &:hover {
+      background-color: rgba(89, 131, 237, .5);
+
+      span, i {
+        color: #ffffff;
+      }
+    }
+  }
+
+  .active-widget {
+    color: #ffffff;
+  }
 </style>

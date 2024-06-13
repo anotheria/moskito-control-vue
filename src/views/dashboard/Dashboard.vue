@@ -221,16 +221,12 @@ const getChartData = (index: number) => {
   display: flex;
   align-items: center;
   background-color: var(--mc-zinc-700);
-  font-size: 12px;
+  font-size: 14px;
   padding: 0 15px;
-  border-top-left-radius: 8px;
-  border-top-right-radius: 8px;
 }
 .data-panel {
   background-color: var(--mc-zinc-100);
   flex-grow: 1;
-  border-bottom-left-radius: 8px;
-  border-bottom-right-radius: 8px;
   color: var(--mc-zinc-900);
 }
 .actions-container {

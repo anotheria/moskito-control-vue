@@ -27,6 +27,6 @@ const viewsList = computed(() => mainStore.getViews);
   height: 60px;
   display: flex;
   align-items: center;
-  padding: 0 15px;
+  padding: 0;
 }
 </style>
