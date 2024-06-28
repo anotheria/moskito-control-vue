@@ -50,3 +50,57 @@
         color: #ffffff;
     }
 }
+
+.el-dialog {
+    background-color: #32333b !important;
+    border-radius: 8px !important;
+    box-shadow: 0 0 12px rgba(255, 255, 255, 0.3) !important;
+
+    &__title {
+        color: #fff !important;
+        font-weight: bold;
+        text-transform: uppercase;
+        font-size: 14px !important;
+    }
+}
+
+.el-tabs {
+    border: none;
+}
+
+.el-tabs--border-card {
+    border: none !important;
+
+    &>.el-tabs__header {
+        background-color: #32333b !important;
+
+        .el-tabs__item {
+            margin: 0 !important;
+            border-bottom: none !important;
+
+            &.is-active {
+                color:  #32333b !important;
+                background-color: #fff !important;
+                border-radius: 5px 5px 0 0;
+                border: 1px solid #ddd !important;
+                border-bottom: none !important;
+            }
+        }
+    }
+}
+
+.el-table .el-table__cell {
+    padding: 5px 0 !important;
+}
+
+.el-table .cell {
+    font-size: 12px !important;
+}
+
+.el-card {
+    font-weight: bold;
+
+    &__header {
+        padding: 10px 22px !important;
+    }
+}
