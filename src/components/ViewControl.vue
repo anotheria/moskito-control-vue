@@ -35,7 +35,7 @@ const status = computed(() => {
   border: none;
   color: var(--mc-zinc-50);
   font-size: 14px;
-  height: 60px;
+  height: 37px;
   padding: 0 16px;
   display: flex;
   align-items: center;

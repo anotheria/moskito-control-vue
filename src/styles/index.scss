@@ -38,3 +38,15 @@
     flex-direction: column;
     padding: 0;
 }
+
+.el-menu-item {
+    height: 30px !important;
+    line-height: 30px !important;
+    font-size: 12px !important;
+    padding: 0 10px !important;
+    color: #979aa8 !important;
+
+    &:hover {
+        color: #ffffff;
+    }
+}

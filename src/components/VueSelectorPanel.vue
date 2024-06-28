@@ -24,9 +24,9 @@ const viewsList = computed(() => mainStore.getViews);
 
 <style scoped lang="scss">
 .selector-panel {
-  height: 60px;
+  height: 37px;
   display: flex;
   align-items: center;
-  padding: 0;
+  padding: 0 0 0 15px;
 }
 </style>

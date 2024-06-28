@@ -17,7 +17,7 @@ const setActiveWidget = (event: { index: keyof typeof widgetSettings.value }) =>
   <div class="dashboard-wrapper">
       <aside class="aside-panel">
           <el-menu default-active="status"
-                   style="margin-top: 100px;"
+                   style="margin-top: 77px;"
           >
               <el-menu-item
                   index="status"

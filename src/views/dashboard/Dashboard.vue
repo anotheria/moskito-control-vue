@@ -223,6 +223,7 @@ const getChartData = (index: number) => {
   background-color: var(--mc-zinc-700);
   font-size: 14px;
   padding: 0 15px;
+  border-top-left-radius: 5px;
 }
 .data-panel {
   background-color: var(--mc-zinc-100);
