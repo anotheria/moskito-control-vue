@@ -1,45 +1,54 @@
 <script setup lang="ts">
-import {computed, onMounted, ref} from 'vue';
+import {computed, onMounted, onUnmounted, ref} from 'vue';
 import {useMainStore} from '@/store/mainStore.ts';
 import MoskitoService from '@/services/MoskitoService.ts';
 import ComponentDetails from "@/views/dashboard/partials/ComponentDetails.vue";
-import {getAverageStatus} from "@/types/consts.ts";
 import VueSelectorPanel from "@/components/VueSelectorPanel.vue";
-import VueStatus from "@/components/VueStatus.vue";
-import {Clock, Right} from '@element-plus/icons-vue';
 import NotificationService from "@/services/NotificationService.ts";
+import HistoryWidget from "@/views/dashboard/partials/HistoryWidget.vue";
+import TVWidget from "@/views/dashboard/partials/TVWidget.vue";
+import ChartWidget from "@/views/dashboard/partials/ChartWidget.vue";
+import DataWidget from "@/views/dashboard/partials/DataWidget.vue";
+import StatusWidget from "@/views/dashboard/partials/StatusWidget.vue";
 
+
+let refreshIntervalId: number;
+let timerIntervalId: number;
 const mainStore = useMainStore();
-const getViews = async () => {
-  const { results: { views } } = await MoskitoService.getControl();
-  mainStore.views = views;
-  mainStore.setInitialActiveView();
-  // await mainStore.fetchHistory();
-  // await getHistory();
-  showData.value = true;
-}
-
-onMounted(() => {
-  getViews();
-});
-
+const remainingTime = ref<number>(60);
+const lastRefreshTime = ref<string>('');
 const showData = ref<boolean>(false);
 const dialogVisible = ref(false);
 const component = ref<any>({});
 
+
 const components = computed(() => mainStore.views?.find((view: any) => view.name === mainStore.activeView)?.components ?? []);
 const historyData = computed(() => mainStore.historyData);
+const dataWidgets = computed(() => mainStore.views?.find((view: any) => view.name === mainStore.activeView)?.dataWidgets ?? []);
 
-const groupedComponents = computed(() => {
-    return components.value?.reduce((acc: any, component: any) => {
-        const category = component.category || 'No Category';
-        if (!acc[category]) {
-            acc[category] = [];
+const formatDate = (date: Date): string => {
+    return date.toISOString().replace('T', ' ').split('.')[0];
+};
+
+const getViews = async () => {
+    const { results: { views } } = await MoskitoService.getControl();
+    mainStore.views = views;
+    mainStore.setInitialActiveView();
+    // await mainStore.fetchHistory();
+    // await getHistory();
+    showData.value = true;
+    lastRefreshTime.value = formatDate(new Date());
+}
+
+const updateRemainingTime = () => {
+    clearInterval(timerIntervalId);
+    remainingTime.value = 60;
+    timerIntervalId = setInterval(() => {
+        if (remainingTime.value > 0) {
+            remainingTime.value -= 1;
         }
-        acc[category].push(component);
-        return acc;
-    }, {});
-});
+    }, 1000);
+};
 
 const openComponentSetting = async (name: string, status: string): Promise<void> => {
     dialogVisible.value = false;
@@ -81,43 +90,19 @@ const openComponentSetting = async (name: string, status: string): Promise<void>
     }
 };
 
-const getChartData = (index: number) => {
-    return {
-        chartOptions: {
-            chart: {
-                type: 'line',
-                zoom: {
-                    enabled: true
-                }
-            },
-            dataLabels: {
-                enabled: false
-            },
-            stroke: {
-                curve: 'straight',
-                width: 1
-            },
-            title: {
-                text: mainStore.getChartData[index]?.name,
-                align: 'left'
-            },
-            grid: {
-                row: {
-                    colors: ['#f3f3f3', 'transparent'],
-                    opacity: 0.5
-                },
-            },
-            xaxis: {
-                categories: mainStore.getChartData[index]?.captions,
-                /*labels: {
-                    format: 'HH:mm',
-                },
-                type: 'datetime',*/
-            }
-        },
-        seriesData: mainStore.getChartData[index]?.lines.map((line: any) => ({ name: line["lineName"], data: line["values"] }))
-    }
-};
+onMounted(() => {
+    getViews();
+    refreshIntervalId = setInterval(() => {
+        getViews();
+        updateRemainingTime();
+    }, 60000); // 60 seconds
+    updateRemainingTime();
+});
+
+onUnmounted(() => {
+    clearInterval(refreshIntervalId);
+    clearInterval(timerIntervalId);
+});
 </script>
 
 <template>
@@ -125,87 +110,22 @@ const getChartData = (index: number) => {
         <component-details :dialog-visible="dialogVisible" :component="component"/>
         <vue-selector-panel />
         <div class="info-panel">
-            info panel with controls Settings | Data Repository
+            <div class="timer">
+                <span> Last refresh: {{ lastRefreshTime }} </span>
+                <span> Next refresh in: {{ remainingTime }} seconds </span>
+            </div>
             <div class="actions-container">
                 <el-button type="info" @click="$router.push('/settings')">Settings</el-button>
+                <el-button type="info" @click="$router.push('/datarepository')"> Data Repository </el-button>
             </div>
         </div>
 
         <div v-if="showData" class="data-panel">
-            <div v-if="mainStore.getShowStatus">
-                <div v-for="(value, key) in groupedComponents">
-                    <el-card shadow="never">
-                        <template #header>
-                            <div>
-                                <vue-status :status-color="getAverageStatus(value.map((component: any) => component.color))"/>
-                                <span>{{key}}</span>
-                            </div>
-                        </template>
-
-                        <span v-for="component in value">
-                            <el-tooltip
-                                effect="dark"
-                                placement="top"
-                            >
-                                <template #content>
-                                    <div v-for="msg in component.messages">
-                                        <span>
-                                            {{ msg }}
-                                        </span>
-                                        <br />
-                                    </div>
-                                    <div class="tooltip-time">
-                                        <el-icon color="white">
-                                            <Clock />
-                                        </el-icon>
-                                        <span>{{ component.ISO8601Timestamp }}</span>
-                                    </div>
-                                </template>
-                                <el-button
-                                    @click="openComponentSetting(component.name, component.color)"
-                                    style="margin-right: 8px"
-                                    :size="'large'"
-                                >
-                                    <vue-status :status-color="component.color"/>
-                                    {{ component.name }}
-                                </el-button>
-                            </el-tooltip>
-                        </span>
-                    </el-card>
-                </div>
-            </div>
-            <div v-if="mainStore.getShowCharts && mainStore.getChartData.length">
-                <div class="widget-header">
-                    <h4>Charts</h4>
-                </div>
-                <div v-for="(chart, index) in mainStore.getChartData">
-                    <apexchart
-                        height="500"
-                        :options="getChartData(index).chartOptions"
-                        :series="getChartData(index).seriesData"
-                    />
-                    <el-divider />
-                </div>
-            </div>
-            <div v-if="mainStore.getShowHistory">
-                <div class="widget-header">
-                    <h4>History</h4>
-                </div>
-                <el-table v-if="historyData" :data="historyData" stripe>
-                    <el-table-column prop="isoTimestamp" label="Timestamp" />
-                    <el-table-column prop="componentName" label="Name" />
-                    <el-table-column prop="newMessages[0]" label="Reason" />
-                    <el-table-column label="Status change">
-                        <template #default="scope">
-                            <div style="display: flex; align-items: center">
-                                <vue-status :status-color="scope.row.oldStatus"/>
-                                <el-icon style="margin-right: 8px;"><Right /></el-icon>
-                                <vue-status :status-color="scope.row.newStatus"/>
-                            </div>
-                        </template>
-                    </el-table-column>
-                </el-table>
-            </div>
+            <TVWidget v-if="mainStore.getShowTV" :viewStatus="mainStore.getActiveViewStatus.toLowerCase()"/>
+            <status-widget v-if="mainStore.getShowStatus" :components="components" @component-selected="openComponentSetting"/>
+            <data-widget :data-widgets="dataWidgets"/>
+            <chart-widget v-if="mainStore.getShowCharts && mainStore.getChartData.length" :chart-data="mainStore.getChartData"/>
+            <history-widget v-if="mainStore.getShowHistory" :historyData="historyData" />
         </div>
     </div>
 </template>
@@ -215,6 +135,11 @@ const getChartData = (index: number) => {
   min-height: 100%;
   display: flex;
   flex-direction: column;
+}
+.timer {
+    display: flex;
+    justify-content: space-between;
+    gap: 25px;
 }
 .info-panel {
   height: 40px;
@@ -233,20 +158,8 @@ const getChartData = (index: number) => {
 .actions-container {
     margin-left: auto;
 }
-.status {
-    width: 8px;
-    height: 8px;
-    display: inline-block;
-    border-radius: 50%;
-    margin-right: 8px;
-    border: 1px solid var(--mc-zinc-200);
-}
-.tooltip-time {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-}
-
+</style>
+<style>
 .widget-header {
     display: flex;
     justify-content: center;

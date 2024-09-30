@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import {Open, TrendCharts, Files} from '@element-plus/icons-vue';
+import {Open, TrendCharts, Files, Monitor} from '@element-plus/icons-vue';
 import {ref} from 'vue';
 import {useMainStore} from "@/store/mainStore.ts";
 
@@ -28,6 +28,16 @@ const setActiveWidget = (event: { index: keyof typeof widgetSettings.value }) =>
                       <Open />
                   </el-icon>
                   <span>Status</span>
+              </el-menu-item>
+              <el-menu-item
+                  index="tv"
+                  :class="widgetSettings['tv'] ? 'active-widget' : 'not-active-widget'"
+                  @click="setActiveWidget"
+              >
+                  <el-icon>
+                      <Monitor />
+                  </el-icon>
+                  <span>TV</span>
               </el-menu-item>
               <el-menu-item
                   index="charts"

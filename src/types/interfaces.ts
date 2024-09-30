@@ -75,3 +75,9 @@ export interface IChartLine {
   caption: string | null;
 }
 
+export interface IDataRepositoryItem {
+  name: string;
+  value: string;
+  formulas: string[];
+}
+

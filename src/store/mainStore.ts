@@ -24,6 +24,7 @@ export const useMainStore = defineStore({
     showStatus: true,
     showHistory: false,
     showCharts: false,
+    showTV: false,
   } as RootState),
 
   getters: {
@@ -33,11 +34,14 @@ export const useMainStore = defineStore({
     getShowStatus: (state) => state.showStatus,
     getShowHistory: (state) => state.showHistory,
     getShowCharts: (state) => state.showCharts,
+    getShowTV: (state) => state.showTV,
     getDashboardStatuses: (state) => ({
       status: state.showStatus,
       charts: state.showHistory,
       history: state.showCharts,
     }),
+    getActiveViewStatus: (state) =>
+        state.views.find((view: any) => view.name === state.activeView).viewColor || 'none',
   },
 
   actions: {
@@ -53,6 +57,7 @@ export const useMainStore = defineStore({
       this.showStatus = mode['status'];
       this.showHistory = mode['history'];
       this.showCharts = mode['charts'];
+      this.showTV = mode['tv'];
     },
     fetchHistory() {
       MoskitoService.fetchHistory(this.activeView).then((response: any) => {

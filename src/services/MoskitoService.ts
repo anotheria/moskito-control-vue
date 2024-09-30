@@ -101,4 +101,8 @@ export default class MoskitoService {
   public static getComponentHistory(componentName: string): Promise<any> {
     return ApiService.getAndReturnData(`component/${componentName}/history`);
   }
+
+    public static getDataRepository(): Promise<any> {
+        return ApiService.getAndReturnData(`/datarepository/store`);
+    }
 }
