@@ -1,13 +1,14 @@
 <script setup lang="ts">
 import VueStatus from "@/components/VueStatus.vue";
 import {Right} from "@element-plus/icons-vue";
+import {IHistoryItem} from "@/types/component.interface.ts";
 
 interface Props {
-    historyData: any;
+    historyData: Array<IHistoryItem> | [];
 }
 
 const props = withDefaults(defineProps<Props>(), {
-    historyData: {},
+    historyData: [],
 });
 </script>
 <template>

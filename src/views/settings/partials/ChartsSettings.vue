@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import {computed, reactive, ref} from "vue";
 import {FormInstance} from "element-plus";
-import {IChart, IChartLine} from "@/types/interfaces.ts";
 import {Folder, FolderOpened} from "@element-plus/icons-vue";
+import {IChart, IChartLine} from "@/types/chart.interface.ts";
 
 
 const props = defineProps({

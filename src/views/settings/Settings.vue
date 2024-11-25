@@ -1,10 +1,23 @@
 <script setup lang="ts">
-import MoskitoService from "@/services/MoskitoService.ts";
 import {onMounted, ref} from "vue";
 import ComponentsSettings from "@/views/settings/partials/ComponentsSettings.vue";
 import ViewsSettings from "@/views/settings/partials/ViewsSettings.vue";
 import ChartsSettings from "@/views/settings/partials/ChartsSettings.vue";
-import {IChart, IComponent, ISettingsContent, IView} from "@/types/interfaces.ts";
+import {
+    fetchCharts,
+    updateChart,
+    deleteChart,
+    fetchComponents,
+    updateComponent,
+    deleteComponent,
+    fetchViews,
+    updateView,
+    deleteView
+} from "@/api/configuration/index.ts";
+import {ISettingsContent} from "@/types/interfaces.ts";
+import {IChart} from "@/types/chart.interface.ts";
+import {IComponent} from "@/types/component.interface.ts";
+import {IView} from "@/types/view.interface.ts";
 
 
 const activeTab = ref<'components' | 'views'| 'charts'>('components');
@@ -14,85 +27,54 @@ const content = ref<ISettingsContent>({
     charts: [],
 });
 
-const updateComponent = (component: IComponent) => {
-    console.log('updateComponent!', component);
-
-    MoskitoService.updateComponent(component).then((response) => {
-        console.log(response);
-        MoskitoService.fetchComponents().then((response) => {
-            content.value.components = response.results.components;
-        });
-    });
+const updateComponentData = async (component: IComponent) => {
+    await updateComponent(component);
+    const response = await fetchComponents();
+    content.value.components = response.components;
 };
 
-const deleteComponent = (name: string) => {
-    console.log('deleteComponent!', name);
-
-    MoskitoService.deleteComponent(name).then((response) => {
-        console.log(response);
-        MoskitoService.fetchComponents().then((response) => {
-            content.value.components = response.results.components;
-        });
-    });
+const deleteComponentData = async (name: string) => {
+    await deleteComponent(name);
+    const response = await fetchComponents();
+    content.value.components = response.components;
 };
 
-const updateView = (view: IView) => {
-    console.log('create view!', view);
-
-    MoskitoService.updateView(view).then((response) => {
-        console.log(response);
-        MoskitoService.fetchViews().then((response) => {
-            content.value.views = response.results.views;
-        });
-    });
+const updateViewData = async (view: IView) => {
+    await updateView(view);
+    const response = await fetchViews();
+    content.value.views = response.views;
 };
 
-const deleteView = (name: string) => {
-    console.log('delete view!', name);
-
-    MoskitoService.deleteView(name).then((response) => {
-        console.log(response);
-        MoskitoService.fetchViews().then((response) => {
-            content.value.views = response.results.views;
-        });
-    });
+const deleteViewData = async (name: string) => {
+    await deleteView(name);
+    const response = await fetchViews();
+    content.value.views = response.views;
 };
 
-const updateChart = (chart: IChart) => {
-    console.log('create chart!', chart);
-
-    MoskitoService.updateChart(chart).then((response) => {
-        console.log(response);
-        MoskitoService.fetchCharts().then((response) => {
-            content.value.charts = response.results.charts;
-        });
-    });
+const updateChartData = async (chart: IChart) => {
+    await updateChart(chart);
+    const response = await fetchCharts();
+    content.value.charts = response.charts;
 };
 
-const deleteChart = (name: string) => {
-    console.log('delete chart!', name);
-
-    MoskitoService.deleteChart(name).then((response) => {
-        console.log(response);
-        MoskitoService.fetchCharts().then((response) => {
-            content.value.charts = response.results.charts;
-        });
-    });
+const deleteChartData = async (name: string) => {
+    await deleteChart(name);
+    const response = await fetchCharts();
+    content.value.charts = response.charts;
 };
 
-onMounted(() => {
-    Promise.all([
-        MoskitoService.fetchViews(),
-        MoskitoService.fetchComponents(),
-        MoskitoService.fetchCharts()
-    ]).then((values) => {
-        content.value = {
-            views: values[0].results.views,
-            components: values[1].results.components,
-            charts: values[2].results.charts,
-        };
-        console.log(content.value);
-    });
+onMounted(async () => {
+    const [viewsResponse, componentsResponse, chartsResponse] = await Promise.all([
+        fetchViews(),
+        fetchComponents(),
+        fetchCharts()
+    ]);
+
+    content.value = {
+        views: viewsResponse.views,
+        components: componentsResponse.components,
+        charts: chartsResponse.charts,
+    };
 });
 </script>
 
@@ -113,16 +95,16 @@ onMounted(() => {
                     <components-settings
                         v-if="content.components.length"
                         :components="content.components"
-                        @delete="deleteComponent($event)"
-                        @update="updateComponent($event)"
+                        @delete="deleteComponentData($event)"
+                        @update="updateComponentData($event)"
                     />
                 </el-tab-pane>
                 <el-tab-pane label="Charts" name="charts">
                     <charts-settings
                         v-if="content.charts.length"
                         :charts="content.charts"
-                        @update="updateChart($event)"
-                        @delete="deleteChart($event)"
+                        @update="updateChartData($event)"
+                        @delete="deleteChartData($event)"
                     />
                 </el-tab-pane>
                 <el-tab-pane label="Views" name="views">
@@ -131,8 +113,8 @@ onMounted(() => {
                         :views="content.views"
                         :chartOptions="content.charts"
                         :componentsOptions="content.components"
-                        @update="updateView($event)"
-                        @delete="deleteView($event)"
+                        @update="updateViewData($event)"
+                        @delete="deleteViewData($event)"
                     />
                 </el-tab-pane>
             </el-tabs>

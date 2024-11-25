@@ -1,8 +1,13 @@
 <script setup lang="ts">
 import VueStatus from "@/components/VueStatus.vue";
-import { defineProps, ref } from "vue";
-import MoskitoService from "@/services/MoskitoService.ts";
+import { defineProps, ref, PropType } from "vue";
 import {Right} from "@element-plus/icons-vue";
+import { getAccumulatorsCharts } from "@/api/component";
+import {
+    IAccumulatorsChart, IAccumulatorsChartLine, IAccumulatorsCharts,
+    IAccumulatorsData,
+    IComponentData
+} from "@/types/component.interface.ts";
 
 const props = defineProps({
     dialogVisible: {
@@ -10,24 +15,28 @@ const props = defineProps({
         default: false,
     },
     component: {
-        type: Object,
-        default: {},
+        type: Object as PropType<IComponentData>,
+        default: () => ({}),
     },
 });
 
-const multipleSelection = ref<any>([]);
-const chartData = ref<any>({});
+const multipleSelection = ref<string[] | []>([]);
+const chartData = ref<IAccumulatorsChart[] | []>([]);
 
-const handleAccumulatorSelection = (acc: any) => {
+const handleAccumulatorSelection = (acc: { name: string }[] | []) => {
     multipleSelection.value = acc;
 
-    const data = {
+    if(!acc.length) {
+        return;
+    }
+
+    const data: IAccumulatorsData = {
         component: props.component.name,
-        accumulators: acc.map((a: any) => a.name),
+        accumulators: acc.map((a: { name: string }) => a.name),
     };
 
-    MoskitoService.getAccumulatorsCharts(data).then((res: any) => {
-        chartData.value = res.results.charts;
+    getAccumulatorsCharts(data).then((res: IAccumulatorsCharts) => {
+        chartData.value = res.charts;
     });
 };
 
@@ -58,24 +67,12 @@ const getChartData = (index: number = 0) => {
                 },
             },
             xaxis: {
-                categories: chartData.value[index]?.points.map((point: any) => point["caption"]),
-                // categories: chartData.value[index]?.points.map((point: any) => point["debugTs"].split(',')[0]),
-                // stepSize: 1,
-                /*labels: {
-                    format: 'HH:mm',
-                },
-                tooltip: {
-                    formatter: function(val, opts) {
-                        console.log('val', val);
-                        return new Date(val).toTimeString();
-                    }
-                },
-                type: 'datetime',*/
+                categories: chartData.value[index]?.points.map((point: IAccumulatorsChartLine) => point["caption"]),
             }
         },
         seriesData: [{
             name: chartData.value[index]?.name,
-            data: chartData.value[index]?.points.map((point: any) => point["values"][0])
+            data: chartData.value[index]?.points.map((point: IAccumulatorsChartLine) => point["values"][0])
         }]
     }
 };
@@ -168,7 +165,6 @@ const getChartData = (index: number = 0) => {
             <el-tab-pane v-if="component.capabilities.config" label="Config">
                 <pre style="overflow-x: auto">{{ component.config }}</pre>
             </el-tab-pane>
-            <!--              <el-tab-pane v-if="activeComponentCapabilities.nowRunning" label="Now Running">nowRunning</el-tab-pane>-->
         </el-tabs>
     </el-dialog>
 </template>

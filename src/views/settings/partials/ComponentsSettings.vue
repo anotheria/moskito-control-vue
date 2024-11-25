@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import {ref, reactive, computed} from "vue";
 import {FormInstance} from "element-plus";
-import {IArrayDataItem, IComponent, IComponentData, IHeader} from "@/types/interfaces.ts";
 import {Folder, FolderOpened} from '@element-plus/icons-vue'
+import {IArrayDataItem, IComponent, IComponentData, IHeader} from "@/types/component.interface.ts";
 
 
 const props = defineProps({
@@ -27,7 +27,7 @@ const activeItem = reactive<IComponent>({
     tags: null,
     connectorType: null,
     credentials: null,
-    data: {},
+    data: [],
     headers: [],
     location: null,
 });
@@ -84,7 +84,7 @@ const addItem = () => {
             tags: null,
             connectorType: null,
             credentials: null,
-            data: {},
+            data: [],
             headers: [],
             location: null,
         });

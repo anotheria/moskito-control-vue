@@ -3,10 +3,11 @@ import {getAverageStatus} from "@/types/consts.ts";
 import VueStatus from "@/components/VueStatus.vue";
 import {Clock} from "@element-plus/icons-vue";
 import {computed, defineProps, ref} from "vue";
+import {IControlComponent} from "@/types/interfaces.ts";
 
 
 interface Props {
-    components: any;
+    components: Array<IControlComponent[]> | [];
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -24,7 +25,7 @@ const allComponents2 = ref({});
 
 
 const groupedComponents = computed(() => {
-    const allComponents = props.components?.reduce((acc: any, component: any) => {
+    const allComponents = props.components.reduce((acc: { [key: string]: IControlComponent[] }, component: IControlComponent) => {
         const category = component.category || 'No Category';
         if (!acc[category]) {
             acc[category] = [];
@@ -37,15 +38,15 @@ const groupedComponents = computed(() => {
 
     const filteredKeys = Object.keys(allComponents).filter(key => categoryFilter.value === 'All' || key === categoryFilter.value);
 
-    return filteredKeys.reduce((acc: any, key: string) => {
-        acc[key] = allComponents[key].filter((component: any) => statusFilter.value.length === 0 || statusFilter.value.includes(component.color));
+    return filteredKeys.reduce((acc: { [key: string]: IControlComponent[] }, key: string) => {
+        acc[key] = allComponents[key].filter((component: IControlComponent) => statusFilter.value.length === 0 || statusFilter.value.includes(component.color));
         return acc;
     }, {});
 });
 
 const statusCount = computed(() => {
-    return statuses.reduce((acc: any, status: string) => {
-        acc[status] = props.components.filter((component: any) => component.color === status).length;
+    return statuses.reduce((acc: { [key: string]: number }, status: string) => {
+        acc[status] = props.components.filter((component: IControlComponent) => component.color === status).length;
         return acc;
     }, {});
 });
@@ -79,7 +80,7 @@ const statusCount = computed(() => {
         <el-card v-if="value.length" shadow="never">
             <template #header>
                 <div>
-                    <vue-status :status-color="getAverageStatus(allComponents2[key].map((component: any) => component.color))"/>
+                    <vue-status :status-color="getAverageStatus(allComponents2[key].map((component: IControlComponent) => component.color))"/>
                     <span>{{key}}</span>
                 </div>
             </template>

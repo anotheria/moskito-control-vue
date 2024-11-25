@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import {computed, reactive, ref} from "vue";
 import {FormInstance} from "element-plus";
-import {IChart, IComponent, IView} from "@/types/interfaces.ts";
 import {Folder, FolderOpened} from "@element-plus/icons-vue";
+import {IView} from "@/types/view.interface.ts";
+import {IChart} from "@/types/chart.interface.ts";
+import {IComponent} from "@/types/component.interface.ts";
 
 const props = defineProps({
     views: {

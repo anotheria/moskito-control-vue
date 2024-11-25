@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import {computed, onMounted, onUnmounted, ref} from 'vue';
 import {useMainStore} from '@/store/mainStore.ts';
-import MoskitoService from '@/services/MoskitoService.ts';
 import ComponentDetails from "@/views/dashboard/partials/ComponentDetails.vue";
 import VueSelectorPanel from "@/components/VueSelectorPanel.vue";
 import NotificationService from "@/services/NotificationService.ts";
@@ -10,6 +9,27 @@ import TVWidget from "@/views/dashboard/partials/TVWidget.vue";
 import ChartWidget from "@/views/dashboard/partials/ChartWidget.vue";
 import DataWidget from "@/views/dashboard/partials/DataWidget.vue";
 import StatusWidget from "@/views/dashboard/partials/StatusWidget.vue";
+import {getMuteStatus, setMuteStatus, setUnmuteStatus} from "@/api/notification";
+import {
+    getComponentCapabilities,
+    getComponentConfig,
+    getComponentConnectorInfo,
+    getComponentInformation,
+    getComponentThresholds,
+    getComponentAccumulators,
+    getComponentActions,
+    getComponentHistory,
+} from "@/api/component";
+import {
+    IAccumulators,
+    IActions, IComponentData,
+    IComponentInfo,
+    IConfig,
+    IConnectorInfo, IHistory,
+    IThresholds
+} from "@/types/component.interface.ts";
+import {getControl} from "@/api/common";
+import {IControlView} from "@/types/interfaces.ts";
 
 
 let refreshIntervalId: number;
@@ -19,23 +39,21 @@ const remainingTime = ref<number>(60);
 const lastRefreshTime = ref<string>('');
 const showData = ref<boolean>(false);
 const dialogVisible = ref(false);
-const component = ref<any>({});
+const component = ref<IComponentData>({});
 
 
-const components = computed(() => mainStore.views?.find((view: any) => view.name === mainStore.activeView)?.components ?? []);
+const components = computed(() => mainStore.views?.find((view: IControlView) => view.name === mainStore.activeView)?.components ?? []);
 const historyData = computed(() => mainStore.historyData);
-const dataWidgets = computed(() => mainStore.views?.find((view: any) => view.name === mainStore.activeView)?.dataWidgets ?? []);
+const dataWidgets = computed(() => mainStore.views?.find((view: IControlView) => view.name === mainStore.activeView)?.dataWidgets ?? []);
 
 const formatDate = (date: Date): string => {
     return date.toISOString().replace('T', ' ').split('.')[0];
 };
 
 const getViews = async () => {
-    const { results: { views } } = await MoskitoService.getControl();
+    const { views } = await getControl();
     mainStore.views = views;
     mainStore.setInitialActiveView();
-    // await mainStore.fetchHistory();
-    // await getHistory();
     showData.value = true;
     lastRefreshTime.value = formatDate(new Date());
 }
@@ -50,36 +68,53 @@ const updateRemainingTime = () => {
     }, 1000);
 };
 
+const updateMuteTime = async () => {
+    const { muteStatus } = await getMuteStatus();
+    mainStore.muteStatus = muteStatus;
+};
+
+const updateMuteStatus = async () => {
+    let muteStatus;
+    if (mainStore.getMuteStatus.muted) {
+        const response = await setUnmuteStatus();
+        muteStatus = response.muteStatus;
+    } else {
+        const response = await setMuteStatus();
+        muteStatus = response.muteStatus;
+    }
+    mainStore.muteStatus = muteStatus;
+};
+
 const openComponentSetting = async (name: string, status: string): Promise<void> => {
     dialogVisible.value = false;
     component.value.name = name;
     component.value.color = status;
 
     try {
-        const res = await MoskitoService.getComponentCapabilities(component.value.name);
-        component.value.capabilities = res.results;
+        const capabilities = await getComponentCapabilities(component.value.name);
+        component.value.capabilities = capabilities;
 
         await Promise.all([
-            res.results.thresholds && MoskitoService.getComponentThresholds(component.value.name).then((res: any) => {
-                component.value.thresholds = res.results.thresholds ?? [];
+            capabilities.thresholds && getComponentThresholds(component.value.name).then((res: IThresholds) => {
+                component.value.thresholds = res.thresholds ?? [];
             }),
-            res.results.config && MoskitoService.getComponentConfig(component.value.name).then((res: any) => {
-                component.value.config = res.results.config ?? {};
+            capabilities.config && getComponentConfig(component.value.name).then((res: IConfig) => {
+                component.value.config = res.config ?? '';
             }),
-            res.results.connectorInfo && MoskitoService.getComponentConnectorInfo(component.value.name).then((res: any) => {
-                component.value.connectorInfo = Object.keys(res.results ?? {}).map(key => ({ key, value: res.results[key] }));
+            capabilities.connectorInfo && getComponentConnectorInfo(component.value.name).then((res: IConnectorInfo) => {
+                component.value.connectorInfo = Object.keys(res ?? {}).map(key => ({ key, value: res[key] }));
             }),
-            res.results.componentInfo && MoskitoService.getComponentComponentInformation(component.value.name).then((res: any) => {
-                component.value.componentInfo = Object.keys(res.results ?? {}).map(key => ({ key, value: res.results[key] }));
+            capabilities.componentInfo && getComponentInformation(component.value.name).then((res: IComponentInfo) => {
+                component.value.componentInfo = Object.keys(res ?? {}).map(key => ({ key, value: res[key] }));
             }),
-            res.results.accumulators && MoskitoService.getComponentAccumulators(component.value.name).then((res: any) => {
-                component.value.accumulators = res.results.accumulators.map((acc: any) => ({ name: acc }));
+            capabilities.accumulators && getComponentAccumulators(component.value.name).then((res: IAccumulators) => {
+                component.value.accumulators = res.accumulators.map((acc: string) => ({ name: acc }));
             }),
-            res.results.actions && MoskitoService.getComponentActions(component.value.name).then((res: any) => {
-                component.value.actions = res.results.actions ?? [];
+            capabilities.actions && getComponentActions(component.value.name).then((res: IActions) => {
+                component.value.actions = res.actions ?? [];
             }),
-            res.results.history && MoskitoService.getComponentHistory(component.value.name).then((res: any) => {
-                component.value.history = res.results.history ?? [];
+            capabilities.history && getComponentHistory(component.value.name).then((res: IHistory) => {
+                component.value.history = res.history ?? [];
             }),
         ]);
 
@@ -95,8 +130,10 @@ onMounted(() => {
     refreshIntervalId = setInterval(() => {
         getViews();
         updateRemainingTime();
+        updateMuteTime();
     }, 60000); // 60 seconds
     updateRemainingTime();
+    updateMuteTime();
 });
 
 onUnmounted(() => {
@@ -115,6 +152,11 @@ onUnmounted(() => {
                 <span> Next refresh in: {{ remainingTime }} seconds </span>
             </div>
             <div class="actions-container">
+                <span class="mute-status">
+                    {{ mainStore.getMuteStatus.muted ? `Remaining muting time ${ mainStore.getMuteStatus.remainingMutingTimeAsString } minutes` : 'Mute for 60 minutes'}}
+                </span>
+                <el-button type="info" @click="updateMuteStatus()">{{ mainStore.getMuteStatus.muted ? 'Unmute' : 'Mute'}}</el-button>
+                <el-divider class="divider" direction="vertical" />
                 <el-button type="info" @click="$router.push('/settings')">Settings</el-button>
                 <el-button type="info" @click="$router.push('/datarepository')"> Data Repository </el-button>
             </div>
@@ -156,7 +198,19 @@ onUnmounted(() => {
   color: var(--mc-zinc-900);
 }
 .actions-container {
+    display: flex;
+    align-items: center;
     margin-left: auto;
+}
+.divider {
+    --el-border-color: black;
+    height: 38px;
+    width: 2px;
+    margin-left: 20px;
+    margin-right: 20px;
+}
+.mute-status {
+    padding-right: 15px;
 }
 </style>
 <style>

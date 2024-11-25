@@ -16,9 +16,11 @@ const setActiveWidget = (event: { index: keyof typeof widgetSettings.value }) =>
 <template>
   <div class="dashboard-wrapper">
       <aside class="aside-panel">
-          <el-menu default-active="status"
-                   style="margin-top: 77px;"
-          >
+          <div class="logo">
+              <img src="src/assets/logo.png" alt="MoSKito Control">
+          </div>
+
+          <el-menu default-active="status">
               <el-menu-item
                   index="status"
                   :class="widgetSettings['status'] ? 'active-widget' : 'not-active-widget'"
@@ -68,6 +70,15 @@ const setActiveWidget = (event: { index: keyof typeof widgetSettings.value }) =>
 </template>
 
 <style scoped lang="scss">
+.logo {
+    display: block;
+    width: 120px;
+    margin: 20px auto;
+
+    img {
+        width: 100%;
+    }
+}
   .active-widget {
     color: var(--el-menu-active-color) !important;
   }

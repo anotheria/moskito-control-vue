@@ -1,15 +1,20 @@
 import { defineStore } from 'pinia';
-import MoskitoService from "@/services/MoskitoService.ts";
+import {INotification} from "@/types/notification.interface.ts";
+import {fetchChartLines, fetchHistory} from "@/api/common";
+import {IGlobalChart, IGlobalCharts} from "@/types/chart.interface.ts";
+import {IHistory, IHistoryItem} from "@/types/component.interface.ts";
+import {IControlView} from "@/types/interfaces.ts";
 
 export type RootState = {
   messages: Map<string, string>;
-  views: any;
+  views: Array<IControlView> | [];
   activeView: string;
-  historyData: any;
-  chartData: any;
+  historyData: Array<IHistoryItem> | [];
+  chartData: Array<IGlobalChart> | [];
   showStatus: boolean;
   showHistory: boolean;
   showCharts: boolean;
+  muteStatus: INotification | {};
 }
 
 export const useMainStore = defineStore({
@@ -17,14 +22,15 @@ export const useMainStore = defineStore({
 
   state: () => ({
     messages: new Map<string, string>(),
-    views: null,
+    views: [],
     activeView: '',
-    historyData: null,
+    historyData: [],
     chartData: [],
     showStatus: true,
     showHistory: false,
     showCharts: false,
     showTV: false,
+    muteStatus: {},
   } as RootState),
 
   getters: {
@@ -41,7 +47,8 @@ export const useMainStore = defineStore({
       history: state.showCharts,
     }),
     getActiveViewStatus: (state) =>
-        state.views.find((view: any) => view.name === state.activeView).viewColor || 'none',
+        state.views.find((view: IControlView) => view.name === state.activeView).viewColor || 'none',
+    getMuteStatus: (state) => state.muteStatus,
   },
 
   actions: {
@@ -53,18 +60,18 @@ export const useMainStore = defineStore({
       this.activeView = name;
       this.fetchHistory();
     },
-    setDashboardMode(mode: any) {
+    setDashboardMode(mode: string) {
       this.showStatus = mode['status'];
       this.showHistory = mode['history'];
       this.showCharts = mode['charts'];
       this.showTV = mode['tv'];
     },
     fetchHistory() {
-      MoskitoService.fetchHistory(this.activeView).then((response: any) => {
-        this.historyData = response.results.history || []
+      fetchHistory(this.activeView).then((response: IHistory) => {
+        this.historyData = response.history || []
       });
 
-      MoskitoService.fetchChartLines(this.activeView).then((response: any) => {
+      fetchChartLines(this.activeView).then((response: IGlobalCharts) => {
         this.chartData = response.charts || [];
       });
     }

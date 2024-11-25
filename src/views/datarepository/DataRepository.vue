@@ -1,15 +1,16 @@
 <script setup lang="ts">
 import {onMounted, ref} from "vue";
-import MoskitoService from "@/services/MoskitoService.ts";
-import {IDataRepositoryItem} from "@/types/interfaces.ts";
+
+import {getDataRepository} from "@/api/common";
+import {IDataRepositoryItem} from "@/types/repository.interface.ts";
 
 
 const data = ref<IDataRepositoryItem[]>([]);
 
 onMounted(async () => {
     try {
-        const response = await MoskitoService.getDataRepository();
-        data.value = response.results.data;
+        const response = await getDataRepository();
+        data.value = response.data;
     } catch (error) {
         console.error("Failed to fetch data repository:", error);
     }

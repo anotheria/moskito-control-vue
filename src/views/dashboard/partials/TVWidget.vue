@@ -1,6 +1,6 @@
 <script setup lang="ts">
 interface Props {
-    viewStatus: any;
+    viewStatus: string;
 }
 
 const props = withDefaults(defineProps<Props>(), {

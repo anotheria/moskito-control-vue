@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import {Bottom, Top} from "@element-plus/icons-vue";
 import {defineProps} from "vue";
+import {IWidget} from "@/types/interfaces.ts";
 
 
 interface Props {
-    dataWidgets: any;
+    dataWidgets: Array<IWidget> | [];
 }
 
 const props = withDefaults(defineProps<Props>(), {

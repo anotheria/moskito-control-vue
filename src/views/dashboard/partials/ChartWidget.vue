@@ -1,13 +1,14 @@
 <script setup lang="ts">
 import { defineProps } from 'vue';
+import {IGlobalChart, IGlobalChartLine} from "@/types/chart.interface.ts";
 
 
 interface Props {
-    chartData: any;
+    chartData: Array<IGlobalChart> | [];
 }
 
 const props = withDefaults(defineProps<Props>(), {
-    chartData: {},
+    chartData: [],
 });
 
 const getChartData = (index: number) => {
@@ -38,13 +39,9 @@ const getChartData = (index: number) => {
             },
             xaxis: {
                 categories: props.chartData[index]?.captions,
-                /*labels: {
-                    format: 'HH:mm',
-                },
-                type: 'datetime',*/
             }
         },
-        seriesData: props.chartData[index]?.lines.map((line: any) => ({ name: line["lineName"], data: line["values"] }))
+        seriesData: props.chartData[index]?.lines.map((line: IGlobalChartLine) => ({ name: line["lineName"], data: line["values"] }))
     }
 };
 
